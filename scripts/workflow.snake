@@ -1,0 +1,30 @@
+#######################################
+#
+# Snakemake workflow analyze genomes
+#
+# How to run:
+#
+# conda create -n cfDNA_project -y snakemake snakemake-executor-plugin-slurm numpy
+# conda activate cfDNA_project
+# snakemake -s workflow.snake --executor slurm -j 0 --use-conda --default-resources slurm_account=Fragmentomics
+#
+#######################################
+import glob
+
+from constants import RESULT_DIR, INPUT_DIR
+
+
+SAMPLES = [f.split('/')[-1].replace('.hg38.frag.gz', '') for f in glob.glob(f"{INPUT_DIR}*.hg38.frag.gz", recursive=True)]
+
+rule all:
+    input:
+        expand(f"{RESULT_DIR}{{sample}}__DHS_test.npy", sample=SAMPLES)
+
+rule preprocess:
+    input:
+        fragment=f"{INPUT_DIR}{{sample}}.hg38.frag.gz",
+        dhs=f"{INPUT_DIR}DHS_test.gz"
+    output:
+        f"{RESULT_DIR}{{sample}}__DHS_test.npy"
+    script:
+        "preprocessing.py"

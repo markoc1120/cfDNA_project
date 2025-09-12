@@ -1,0 +1,14 @@
+data/
+raw_data/
+__pycache__/
+
+.snakemake*
+.python-version
+
+
+.idea
+
+.pytest*
+.cache
+.mypy_cache
+.ipynb*
