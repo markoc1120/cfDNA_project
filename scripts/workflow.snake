@@ -11,20 +11,68 @@
 #######################################
 import glob
 
-from constants import RESULT_DIR, INPUT_DIR
+from constants import (
+    INPUT_DIR, INPUT_DHS_DIR, 
+    RESULT_DIR, RESULT_SORTED_DIR,
+    MATRIX_COLUMNS
+)
 
 
 SAMPLES = [f.split('/')[-1].replace('.hg38.frag.gz', '') for f in glob.glob(f"{INPUT_DIR}*.hg38.frag.gz", recursive=True)]
 
 rule all:
     input:
-        expand(f"{RESULT_DIR}{{sample}}__DHS_test.npy", sample=SAMPLES)
-
-rule preprocess:
+        f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted.bed",
+        f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted_wl{MATRIX_COLUMNS}.bed",
+        expand(f"{RESULT_SORTED_DIR}{{sample}}_sorted.hg38.frag.gz", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy", sample=SAMPLES),
+        
+rule check_dhs_data_sorting:
+    input:
+        dhs=f"{INPUT_DHS_DIR}Lymphoid_DHS.bed"
+    output:
+        dhs_sorted=f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted.bed"
+    shell:
+        '''
+        if cat {input.dhs} | awk -F'\t' '{{if(NR>1 && prev > $2 && $1 == prev_chr) {{print "PROBLEM"; exit 1}}; prev=$2; prev_chr=$1}}'; then
+            # the file is sorted, only create the symlink
+            ln -s $(realpath {input.dhs}) {output.dhs_sorted}
+        else
+            # the file isn't sorted, so we need to sort it by chr (with -V) and start position (with -n) and then gzip back
+            sort -k1,1V -k2,2n {input.dhs} > {output.dhs_sorted}
+        fi
+        '''
+        
+rule preprocess_dhs_sorted_data:
+    input:
+        dhs_sorted=f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted.bed"
+    output:
+        dhs_sorted_preprocessed=f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted_wl{MATRIX_COLUMNS}.bed"
+    script:
+        "preprocess_dhs.py"
+        
+rule check_fragments_data_sorting:
     input:
         fragment=f"{INPUT_DIR}{{sample}}.hg38.frag.gz",
-        dhs=f"{INPUT_DIR}DHS_test.gz"
     output:
-        f"{RESULT_DIR}{{sample}}__DHS_test.npy"
+        fragment_sorted=f"{RESULT_SORTED_DIR}{{sample}}_sorted.hg38.frag.gz"
+    shell:
+        '''
+        if zcat {input.fragment} | awk -F'\t' '{{if(NR>1 && prev > $2 && $1 == prev_chr) {{print "PROBLEM"; exit 1}}; prev=$2; prev_chr=$1}}'; then
+            # the file is sorted, only create the symlink
+            ln -s $(realpath {input.fragment}) {output.fragment_sorted}
+        else
+            # the file isn't sorted, so we need to sort it by chr (with -V) and start position (with -n) and then gzip back
+            zcat {input.fragment} | sort -k1,1V -k2,2n | gzip -c > {output.fragment_sorted}
+        fi
+        '''
+
+rule preprocess_fragments:
+    input:
+        fragment=f"{RESULT_SORTED_DIR}{{sample}}_sorted.hg38.frag.gz",
+        #dhs=f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted.bed"
+        dhs=f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted_wl{MATRIX_COLUMNS}.bed"
+    output:
+        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy"
     script:
-        "preprocessing.py"
+        "preprocess_fragments.py"
