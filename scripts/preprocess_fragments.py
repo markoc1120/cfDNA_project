@@ -53,7 +53,7 @@ class Preprocessor():
         chr, start, end = parsed_fragment[0:3]
         return chr, int(start), int(end)
     
-    
+    # length vs fragments' relative midpoint
     def generate_matrix(self, should_save=True) -> np.ndarray:
         self.DHS_sites, self.initial_DHS_length = self.read_dhs_to_memory()
         result = np.zeros((MATRIX_ROWS, MATRIX_COLUMNS))
@@ -91,16 +91,13 @@ class Preprocessor():
                 # move fragments that are not overlapping and in the previous chromosome from the dhs point of view
                 if chr != curr_chr:
                     continue
+                
+                rel_midpoint = fragment_midpoint - curr_dhs_start
 
-                rel_start = start - curr_dhs_start
-                rel_end = end - curr_dhs_start
-
-                # take care boundaries so we ain't updating nonexistent rows or columns
-                rel_start = max(0, rel_start)
-                rel_end = min(MATRIX_COLUMNS - 1, rel_end)
-
-                if rel_start < rel_end:
-                    result[fragment_length, (rel_end-rel_start)//2] += 1
+                # only track fragments those are in our boundaries
+                if rel_midpoint >= 0 and rel_midpoint < MATRIX_COLUMNS:
+                    result[fragment_length, rel_midpoint] += 1
+                    
         if should_save:
             np.save(self.output_file, result)
         return result
