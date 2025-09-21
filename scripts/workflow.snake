@@ -26,6 +26,10 @@ rule all:
         f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted_wl{MATRIX_COLUMNS}.bed",
         expand(f"{RESULT_SORTED_DIR}{{sample}}_sorted.hg38.frag.gz", sample=SAMPLES),
         expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy", sample=SAMPLES),
+        #expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.npy", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_coverage.png", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fragment_lengths_distribution.png", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.png", sample=SAMPLES),
         
 rule check_dhs_data_sorting:
     input:
@@ -76,3 +80,22 @@ rule preprocess_fragments:
         f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy"
     script:
         "preprocess_fragments.py"
+        
+rule calculate_test_statistics:
+    input:
+        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy"
+    output:
+        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.npy"
+    script:
+        "calculate_test_statistics.py"
+        
+rule visualize_matrix:
+    input:
+        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        lwps=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.npy"
+    output:
+        coverage_plot=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_coverage.png",
+        fragment_lengths_plot=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fragment_lengths_distribution.png",
+        lwps_plot=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.png",
+    script:
+        "visualize_matrix.py"
