@@ -1,7 +1,12 @@
 import numpy as np
 import logging
 
-from constants import LWPS_WINDOW_SIZE
+from constants import (
+    LWPS_WINDOW_SIZE, 
+    LWPS_LOWER_THRESHOLD, 
+    LWPS_UPPER_THRESHOLD,
+    LWPS_NUM_POSITIONS
+)
 
 
 logger = logging.getLogger(__name__)
@@ -9,13 +14,16 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def calculate_lwps(matrix: np.ndarray, window_size=LWPS_WINDOW_SIZE) -> np.ndarray:
-    num_positions = matrix.shape[1]
-    lwps = np.zeros(num_positions)
+    lwps = np.zeros(LWPS_NUM_POSITIONS)
     
     # precompute fragment_data to avoid O(n^3)
     # TODO: maybe numpy matrix operations would be faster
     fragment_data = []
     for fragment_length in range(matrix.shape[0]):
+        # filtering out fragments for 120-180 bp length range
+        if LWPS_LOWER_THRESHOLD <= fragment_length <= LWPS_UPPER_THRESHOLD:
+            continue
+            
         for rel_midpoint in range(matrix.shape[1]):
             count = matrix[fragment_length, rel_midpoint]
             if count > 0:
@@ -27,12 +35,16 @@ def calculate_lwps(matrix: np.ndarray, window_size=LWPS_WINDOW_SIZE) -> np.ndarr
                     'count': count,
                 })
     
-    # sliding window algo O(n^2) -> calculating lwps for each positions 1,2,3..,1999,2000
-    for pos in range(num_positions):
-        if not (pos % 100) or pos == num_positions - 1:
-            logger.info("{}%".format(round(pos/num_positions * 100)))
+    # sliding window algo O(n^2) -> calculating lwps for each positions 180,181,...,1818, 1819 O(n^2)
+    for pos in range(LWPS_UPPER_THRESHOLD, LWPS_NUM_POSITIONS + LWPS_UPPER_THRESHOLD):
+        # matrix indexing starts from 0
+        pos_idx = pos - LWPS_UPPER_THRESHOLD
         
-        # for position 0 -> window [-60, 60]
+        if pos_idx % 100 == 0 or pos_idx == LWPS_NUM_POSITIONS - 1:
+            progress = round(pos_idx / LWPS_NUM_POSITIONS * 100)
+            logger.info(f"Progress: {progress}%")
+        
+        # for position 180 -> window [120, 240]
         window_start = pos - window_size // 2
         window_end = pos + window_size // 2
         
@@ -54,7 +66,7 @@ def calculate_lwps(matrix: np.ndarray, window_size=LWPS_WINDOW_SIZE) -> np.ndarr
             if window_start <= frag_end <= window_end:    # ending in the window
                 internal_endpoints += count
         
-        lwps[pos] = spanning_count - internal_endpoints
+        lwps[pos_idx] = spanning_count - internal_endpoints
     
     return lwps
 

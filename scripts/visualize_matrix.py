@@ -1,11 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-try:
-    from constants import MATRIX_COLUMNS
-except ImportError:
-    # fallback
-    MATRIX_COLUMNS = 2000
+from constants import (
+    MATRIX_COLUMNS,
+    LWPS_UPPER_THRESHOLD,
+    LWPS_NUM_POSITIONS
+)
 
 
 def calculate_coverage(matrix: np.ndarray, max_position: int) -> np.ndarray:
@@ -36,9 +36,10 @@ def plot_distributions(
     xlabel: str,
     ylabel: str,
     title: str,
+    x_positions: np.ndarray,
 ):
     fig = plt.figure(figsize=(8, 4))
-    plt.plot(np.arange(len(input_matrix)), input_matrix)
+    plt.plot(x_positions, input_matrix)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
@@ -65,6 +66,7 @@ if 'snakemake' in globals():
         "Relative midpoint positions",
         "Coverage",
         "Relative midpoint positions VS Coverage",
+        np.arange(len(coverage)),
     )
     plot_distributions(
         matrix.sum(axis=1),
@@ -72,6 +74,7 @@ if 'snakemake' in globals():
         "Fragment lengths",
         "Count",
         "Fragment lengths distribution",
+        np.arange(len(matrix)),
     )
     plot_distributions(
         lwps,
@@ -79,5 +82,6 @@ if 'snakemake' in globals():
         "Relative midpoint positions",
         "L-WPS score",
         "Relative midpoint positions VS L-WPS score",
+        np.arange(LWPS_UPPER_THRESHOLD, LWPS_NUM_POSITIONS + LWPS_UPPER_THRESHOLD + 1),
     )
     
