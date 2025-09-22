@@ -1,17 +1,33 @@
 import numpy as np
 import logging
 
+from constants import LWPS_WINDOW_SIZE
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 
-# TODO: export window_size to constants.py
-def calculate_lwps(matrix: np.ndarray, window_size=120) -> np.ndarray:
+def calculate_lwps(matrix: np.ndarray, window_size=LWPS_WINDOW_SIZE) -> np.ndarray:
     num_positions = matrix.shape[1]
     lwps = np.zeros(num_positions)
     
-    # sliding window -> calculating lwps for each positions 1,2,3..,1999,2000
+    # precompute fragment_data to avoid O(n^3)
+    # TODO: maybe numpy matrix operations would be faster
+    fragment_data = []
+    for fragment_length in range(matrix.shape[0]):
+        for rel_midpoint in range(matrix.shape[1]):
+            count = matrix[fragment_length, rel_midpoint]
+            if count > 0:
+                frag_start = rel_midpoint - fragment_length // 2
+                frag_end = rel_midpoint + fragment_length // 2
+                fragment_data.append({
+                    'start': frag_start,
+                    'end': frag_end,
+                    'count': count,
+                })
+    
+    # sliding window algo O(n^2) -> calculating lwps for each positions 1,2,3..,1999,2000
     for pos in range(num_positions):
         if not (pos % 100) or pos == num_positions - 1:
             logger.info("{}%".format(round(pos/num_positions * 100)))
@@ -25,23 +41,18 @@ def calculate_lwps(matrix: np.ndarray, window_size=120) -> np.ndarray:
         # fragments those either start or end in the window
         internal_endpoints = 0
         
-        for fragment_length in range(matrix.shape[0]):
-            for rel_midpoint in range(matrix.shape[1]):
-                count = matrix[fragment_length, rel_midpoint]
-                if count > 0:
-                    # calculate fragment start and end from midpoint and length
-                    frag_start = rel_midpoint - fragment_length // 2
-                    frag_end = rel_midpoint + fragment_length // 2
-                    
-                    # count spanning fragments
-                    if frag_start <= window_start and frag_end >= window_end:
-                        spanning_count += count
-                    
-                    # count internal endpoints
-                    if window_start <= frag_start <= window_end:  # starting in the window
-                        internal_endpoints += count
-                    if window_start <= frag_end <= window_end:  # ending in the window
-                        internal_endpoints += count
+        for frag in fragment_data:
+            frag_start, frag_end, count = frag['start'], frag['end'], frag['count']
+            
+            # count spanning fragments
+            if frag_start <= window_start and frag_end >= window_end:
+                spanning_count += count
+            
+            # count internal endpoints
+            if window_start <= frag_start <= window_end:  # starting in the window
+                internal_endpoints += count
+            if window_start <= frag_end <= window_end:    # ending in the window
+                internal_endpoints += count
         
         lwps[pos] = spanning_count - internal_endpoints
     
