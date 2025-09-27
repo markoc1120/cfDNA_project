@@ -1,14 +1,18 @@
 import gzip
 import numpy as np
 import logging
+import yaml
+import os
 
 from collections import deque
-try:
-    from constants import MATRIX_ROWS, MATRIX_COLUMNS
-except ImportError:
-    # fallbacks
-    MATRIX_ROWS = 264
-    MATRIX_COLUMNS = 2000
+
+
+config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
+with open(config_path, 'r') as f:
+    config = yaml.safe_load(f)
+
+MATRIX_ROWS = config['matrix_rows']
+MATRIX_COLUMNS = config['matrix_columns']
 
 
 logger = logging.getLogger(__name__)

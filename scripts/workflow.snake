@@ -10,14 +10,19 @@
 #
 #######################################
 import glob
+import yaml
 
-from constants import (
-    INPUT_DIR, INPUT_DHS_DIR, 
-    RESULT_DIR, RESULT_SORTED_DIR,
-    MATRIX_COLUMNS
-)
+with open('config.yaml', 'r') as f:
+    config = yaml.safe_load(f)
+
+INPUT_DIR = config['input_dir']
+INPUT_DHS_DIR = config['input_dhs_dir']
+RESULT_DIR = config['result_dir']
+RESULT_SORTED_DIR = config['result_sorted_dir']
+MATRIX_COLUMNS = config['matrix_columns']
 
 
+STATISTICS = config['statistics']
 SAMPLES = [f.split('/')[-1].replace('.hg38.frag.gz', '') for f in glob.glob(f"{INPUT_DIR}*.hg38.frag.gz", recursive=True)]
 
 rule all:
@@ -26,10 +31,10 @@ rule all:
         f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted_wl{MATRIX_COLUMNS}.bed",
         expand(f"{RESULT_SORTED_DIR}{{sample}}_sorted.hg38.frag.gz", sample=SAMPLES),
         expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy", sample=SAMPLES),
-        #expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.npy", sample=SAMPLES),
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_coverage.png", sample=SAMPLES),
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fragment_lengths_distribution.png", sample=SAMPLES),
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.png", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_{{statistics}}.npy", sample=SAMPLES, statistics=STATISTICS),
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_{{statistics}}.png", sample=SAMPLES, statistics=STATISTICS),
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.coverage_plot.png", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.fragment_lengths_plot.png", sample=SAMPLES),
         
 rule check_dhs_data_sorting:
     input:
@@ -81,21 +86,36 @@ rule preprocess_fragments:
     script:
         "preprocess_fragments.py"
         
-rule calculate_test_statistics:
+rule calculate_statistic:
     input:
-        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy"
+        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        config="config.yaml"
     output:
-        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.npy"
+        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_{{statistic}}.npy"
+    params:
+        statistic="{statistic}"
     script:
-        "calculate_test_statistics.py"
+        "calculate_statistics.py"
+
+rule visualize_statistic:
+    input:
+        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        statistic=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_{{statistic}}.npy",
+        config="config.yaml"
+    output:
+        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_{{statistic}}.png"
+    params:
+        statistic="{statistic}",
+        sample="{sample}"
+    script:
+        "visualize_statistics.py"
         
 rule visualize_matrix:
     input:
         matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
-        lwps=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.npy"
+        config="config.yaml"
     output:
-        coverage_plot=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_coverage.png",
-        fragment_lengths_plot=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fragment_lengths_distribution.png",
-        lwps_plot=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.png",
+        coverage_plot=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.coverage_plot.png",
+        fragment_lengths_plot=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.fragment_lengths_plot.png",
     script:
         "visualize_matrix.py"

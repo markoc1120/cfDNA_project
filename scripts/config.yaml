@@ -1,0 +1,21 @@
+# cfDNA Project Configuration
+env_name: "cfDNA_project"
+
+input_dir: "../raw_data/test/"
+input_dhs_dir: "../raw_data/dhs/"
+result_dir: "../data/test/"
+result_sorted_dir: "../data/sorted/"
+
+# matrix dimensions
+matrix_rows: 264
+matrix_columns: 2000
+
+# statistics configuration
+statistics:
+  - lwps
+
+# L-WPS test statistic parameters
+lwps:
+  window_size: 120
+  lower_threshold: 120
+  upper_threshold: 180

@@ -1,11 +1,6 @@
+import yaml
 import numpy as np
 import matplotlib.pyplot as plt
-
-from constants import (
-    MATRIX_COLUMNS,
-    LWPS_UPPER_THRESHOLD,
-    LWPS_NUM_POSITIONS
-)
 
 
 def calculate_coverage(matrix: np.ndarray, max_position: int) -> np.ndarray:
@@ -49,15 +44,18 @@ def plot_distributions(
 
 if 'snakemake' in globals():
     matrix_path = snakemake.input.matrix
-    lwps_path = snakemake.input.lwps
+    config_path = snakemake.input.config
     
     coverage_plot_path = snakemake.output.coverage_plot
     fragment_lengths_plot_path = snakemake.output.fragment_lengths_plot
-    lwps_plot_path = snakemake.output.lwps_plot
     
-    with open(matrix_path, 'rb') as f_matrix, open(lwps_path, 'rb') as f_lwps:
-        matrix = np.load(f_matrix)
-        lwps = np.load(f_lwps)
+    with open(matrix_path, 'rb') as f:
+        matrix = np.load(f)
+        
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+
+    MATRIX_COLUMNS = config['matrix_columns']
         
     coverage = calculate_coverage(matrix, MATRIX_COLUMNS)
     plot_distributions(
@@ -75,13 +73,5 @@ if 'snakemake' in globals():
         "Count",
         "Fragment lengths distribution",
         np.arange(len(matrix)),
-    )
-    plot_distributions(
-        lwps,
-        lwps_plot_path,
-        "Relative midpoint positions",
-        "L-WPS score",
-        "Relative midpoint positions VS L-WPS score",
-        np.arange(LWPS_UPPER_THRESHOLD, LWPS_NUM_POSITIONS + LWPS_UPPER_THRESHOLD + 1),
     )
     
