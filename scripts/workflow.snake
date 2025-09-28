@@ -21,8 +21,6 @@ RESULT_DIR = config['result_dir']
 RESULT_SORTED_DIR = config['result_sorted_dir']
 MATRIX_COLUMNS = config['matrix_columns']
 
-
-STATISTICS = config['statistics']
 SAMPLES = [f.split('/')[-1].replace('.hg38.frag.gz', '') for f in glob.glob(f"{INPUT_DIR}*.hg38.frag.gz", recursive=True)]
 
 rule all:
@@ -31,8 +29,16 @@ rule all:
         f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted_wl{MATRIX_COLUMNS}.bed",
         expand(f"{RESULT_SORTED_DIR}{{sample}}_sorted.hg38.frag.gz", sample=SAMPLES),
         expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy", sample=SAMPLES),
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_{{statistics}}.npy", sample=SAMPLES, statistics=STATISTICS),
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_{{statistics}}.png", sample=SAMPLES, statistics=STATISTICS),
+        
+        # L-WPS
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.npy", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.png", sample=SAMPLES),
+        
+        # FDI
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fdi.npz", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fdi.png", sample=SAMPLES),
+        
+        # General visualization
         expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.coverage_plot.png", sample=SAMPLES),
         expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.fragment_lengths_plot.png", sample=SAMPLES),
         
@@ -86,30 +92,59 @@ rule preprocess_fragments:
     script:
         "preprocess_fragments.py"
         
-rule calculate_statistic:
+# LWPS calculation
+rule calculate_lwps:
     input:
         matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
         config="config.yaml"
     output:
-        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_{{statistic}}.npy"
+        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.npy"
     params:
-        statistic="{statistic}"
+        statistic="lwps"
     script:
         "calculate_statistics.py"
 
-rule visualize_statistic:
+# FDI calculation
+rule calculate_fdi:
     input:
         matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
-        statistic=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_{{statistic}}.npy",
         config="config.yaml"
     output:
-        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_{{statistic}}.png"
+        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fdi.npz"
     params:
-        statistic="{statistic}",
+        statistic="fdi"
+    script:
+        "calculate_statistics.py"
+        
+# L-WPS visualization
+rule visualize_lwps:
+    input:
+        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        statistic=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.npy",
+        config="config.yaml"
+    output:
+        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.png"
+    params:
+        statistic="lwps",
+        sample="{sample}"
+    script:
+        "visualize_statistics.py"
+
+# FDI visualization
+rule visualize_fdi:
+    input:
+        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        statistic=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fdi.npz",
+        config="config.yaml"
+    output:
+        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fdi.png"
+    params:
+        statistic="fdi",
         sample="{sample}"
     script:
         "visualize_statistics.py"
         
+# General visualization
 rule visualize_matrix:
     input:
         matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",

@@ -1,7 +1,9 @@
 from .lwps import LWPSStatistic
+from .fdi import FDIStatistic
 
 AVAILABLE_STATISTICS = {
     'lwps': LWPSStatistic,
+    'fdi': FDIStatistic,
 }
 
 def create_statistic(name: str, config: dict):

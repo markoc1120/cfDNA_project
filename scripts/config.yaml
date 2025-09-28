@@ -10,12 +10,15 @@ result_sorted_dir: "../data/sorted/"
 matrix_rows: 264
 matrix_columns: 2000
 
-# statistics configuration
-statistics:
-  - lwps
-
 # L-WPS test statistic parameters
 lwps:
   window_size: 120
   lower_threshold: 120
   upper_threshold: 180
+  
+# FDI test statistic parameters
+fdi:
+  window_size: 200
+  step_size: 20
+  endpoint_window: 10
+  x: 0.999

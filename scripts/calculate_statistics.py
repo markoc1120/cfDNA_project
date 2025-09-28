@@ -5,7 +5,10 @@ from test_statistics import create_statistic
 
 
 def save_statistic_data(data, file_path):
-    np.save(file_path, data)
+    if isinstance(data, dict):
+        np.savez(file_path, **data)
+    else:
+        np.save(file_path, data)
 
 
 if 'snakemake' in globals():
