@@ -16,11 +16,10 @@ class FDIStatistic(TestStatistic):
         # Get parameters from config
         X = self.config.get('x', 0.999)
         ENDPOINT_WINDOW = self.config.get('endpoint_window', 10)
-        WINDOW_SIZE = self.config.get('window_size', 200)
-        STEP_SIZE = self.config.get('step_size', 20)
+        WINDOW_SIZE = self.config.get('window_size', 20)
 
         logger.info(
-            f"calculating FDI with x={X}, endpoint_window={ENDPOINT_WINDOW}, window_size={WINDOW_SIZE}, step_size={STEP_SIZE}"
+            f"calculating FDI with x={X}, endpoint_window={ENDPOINT_WINDOW}, window_size={WINDOW_SIZE}"
         )
 
         # convert matrix to reads format
@@ -33,10 +32,8 @@ class FDIStatistic(TestStatistic):
         # calculate endpoint dispersion matrix
         dispersion_matrix = self.calculate_endpoint_dispersion(reads, matrix.shape[1], X, ENDPOINT_WINDOW)
 
-        # calculate FDI in sliding windows
-        fdi_results = self.calculate_windowed_fdi(
-            coverage, dispersion_matrix, WINDOW_SIZE, STEP_SIZE
-        )
+        # calculate FDI in non-overlapping windows
+        fdi_results = self.calculate_windowed_fdi(coverage, dispersion_matrix, WINDOW_SIZE)
 
         return fdi_results
 
@@ -127,17 +124,17 @@ class FDIStatistic(TestStatistic):
 
         return dispersion_matrix
 
-    def calculate_windowed_fdi(self, coverage, dispersion_matrix, window_size, step_size):
+    def calculate_windowed_fdi(self, coverage, dispersion_matrix, window_size):
         matrix_columns = len(coverage)
-        num_windows = (matrix_columns - window_size) // step_size + 1
+        num_windows = matrix_columns // window_size
 
         positions, fdi_scores, coverage_stds, endpoint_dispersions = [], [], [], []
         for i in range(num_windows):
-            start = i * step_size
-            end = start + window_size + 1
+            start = i * window_size
+            end = start + window_size
 
-            if not i % 10:
-                progress = round(i / (num_windows - 1) * 100)
+            if not i % 10 or i == num_windows - 1:
+                progress = round(i / (num_windows - 1) * 100) if num_windows > 1 else 100
                 logger.info(f'FDI calculation progress: {progress}%')
 
             if end > matrix_columns:
@@ -182,8 +179,8 @@ class FDIStatistic(TestStatistic):
         plt.xlabel('Relative midpoint positions')
         plt.ylabel('FDI score (log scale)')
         plt.title(
-            f'FDI scores across sliding windows '
-            f'(window_size={self.config["window_size"]}, step_size={self.config["step_size"]})'
+            f'FDI scores across non-overlapping windows '
+            f'(window_size={self.config["window_size"]})'
         )
         plt.legend()
         plt.show()
