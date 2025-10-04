@@ -16,7 +16,8 @@ class FDIStatistic(TestStatistic):
         # Get parameters from config
         X = self.config.get('x', 0.999)
         ENDPOINT_WINDOW = self.config.get('endpoint_window', 10)
-        WINDOW_SIZE = self.config.get('window_size', 20)
+        WINDOW_SIZE = self.config.get('window_size', 125)
+        MATRIX_SHIFT = self.config.get('matrix_shift', 250)
 
         logger.info(
             f"calculating FDI with x={X}, endpoint_window={ENDPOINT_WINDOW}, window_size={WINDOW_SIZE}"
@@ -33,7 +34,7 @@ class FDIStatistic(TestStatistic):
         dispersion_matrix = self.calculate_endpoint_dispersion(reads, matrix.shape[1], X, ENDPOINT_WINDOW)
 
         # calculate FDI in non-overlapping windows
-        fdi_results = self.calculate_windowed_fdi(coverage, dispersion_matrix, WINDOW_SIZE)
+        fdi_results = self.calculate_windowed_fdi(coverage, dispersion_matrix, WINDOW_SIZE, MATRIX_SHIFT)
 
         return fdi_results
 
@@ -124,7 +125,7 @@ class FDIStatistic(TestStatistic):
 
         return dispersion_matrix
 
-    def calculate_windowed_fdi(self, coverage, dispersion_matrix, window_size):
+    def calculate_windowed_fdi(self, coverage, dispersion_matrix, window_size, matrix_shift):
         matrix_columns = len(coverage)
         num_windows = matrix_columns // window_size
 
@@ -155,11 +156,12 @@ class FDIStatistic(TestStatistic):
 
             # calculate FDI score
             fdi_score = coverage_std * avg_endpoint_dispersion
-
-            positions.append((start, end))
-            fdi_scores.append(fdi_score)
-            coverage_stds.append(coverage_std)
-            endpoint_dispersions.append(avg_endpoint_dispersion)
+            
+            if start >= matrix_shift and end <= (matrix_columns - matrix_shift):
+                positions.append((start-matrix_shift, end-matrix_shift))
+                fdi_scores.append(fdi_score)
+                coverage_stds.append(coverage_std)
+                endpoint_dispersions.append(avg_endpoint_dispersion)
 
         return {
             'positions': positions,
@@ -173,7 +175,7 @@ class FDIStatistic(TestStatistic):
         
         window_centers = [(start + end) // 2 for start, end in statistic_data['positions']]
 
-        plt.plot(window_centers, statistic_data['fdi_scores'], 'b-', marker='o', markersize=4, linewidth=1)
+        plt.plot(window_centers, statistic_data['fdi_scores'], marker='o', markersize=4, linewidth=1)
         plt.axvline(x=1000, color='red', linestyle='--', linewidth=2, label='DHS site at 1000') # mark the DHS site
         plt.yscale('log') # use log scale for y-axis since values are very small
         plt.xlabel('Relative midpoint positions')

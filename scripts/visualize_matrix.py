@@ -55,16 +55,18 @@ if 'snakemake' in globals():
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
 
-    MATRIX_COLUMNS = config['matrix_columns']
+    MATRIX_COLUMNS = config.get('matrix_columns', 2500)
+    MATRIX_SHIFT = config.get('matrix_shift', 250)
         
     coverage = calculate_coverage(matrix, MATRIX_COLUMNS)
+    coverage_wl = coverage[MATRIX_SHIFT:MATRIX_COLUMNS - MATRIX_SHIFT]
     plot_distributions(
-        coverage,
+        coverage_wl,
         coverage_plot_path,
         "Relative midpoint positions",
         "Coverage",
         "Relative midpoint positions VS Coverage",
-        np.arange(len(coverage)),
+        np.arange(len(coverage_wl)),
     )
     plot_distributions(
         matrix.sum(axis=1),

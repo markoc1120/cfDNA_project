@@ -7,8 +7,9 @@ result_dir: "../data/test/"
 result_sorted_dir: "../data/sorted/"
 
 # matrix dimensions
-matrix_rows: 264
-matrix_columns: 2000
+matrix_rows: 500
+matrix_columns: 2500
+matrix_shift: 250
 
 # L-WPS test statistic parameters
 lwps:
@@ -18,6 +19,6 @@ lwps:
   
 # FDI test statistic parameters
 fdi:
-  window_size: 20
+  window_size: 125
   endpoint_window: 10
   x: 0.999

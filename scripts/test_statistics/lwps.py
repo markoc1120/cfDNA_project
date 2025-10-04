@@ -17,7 +17,8 @@ class LWPSStatistic(TestStatistic):
         LWPS_WINDOW_SIZE = self.config.get('window_size', 120)
         LWPS_LOWER_THRESHOLD = self.config.get('lower_threshold', 120)
         LWPS_UPPER_THRESHOLD = self.config.get('upper_threshold', 180)
-        LWPS_NUM_POSITIONS = matrix.shape[1] - 2 * LWPS_UPPER_THRESHOLD
+        MATRIX_SHIFT = self.config.get('matrix_shift', 250)
+        LWPS_NUM_POSITIONS = matrix.shape[1] - 2 * MATRIX_SHIFT
         
         lwps = np.zeros(LWPS_NUM_POSITIONS)
         
@@ -41,9 +42,9 @@ class LWPSStatistic(TestStatistic):
                     })
         
         # sliding window algo O(n^2) -> calculating lwps for each positions 180,181,...,1818, 1819 O(n^2)
-        for pos in range(LWPS_UPPER_THRESHOLD, LWPS_NUM_POSITIONS + LWPS_UPPER_THRESHOLD):
+        for pos in range(MATRIX_SHIFT, LWPS_NUM_POSITIONS + MATRIX_SHIFT):
             # matrix indexing starts from 0
-            pos_idx = pos - LWPS_UPPER_THRESHOLD
+            pos_idx = pos - MATRIX_SHIFT
             
             if pos_idx % 100 == 0 or pos_idx == LWPS_NUM_POSITIONS - 1:
                 progress = round(pos_idx / LWPS_NUM_POSITIONS * 100)
@@ -76,11 +77,10 @@ class LWPSStatistic(TestStatistic):
         return lwps
         
     def visualize(self, statistic_data, output_paths):
-        LWPS_UPPER_THRESHOLD = self.config.get('upper_threshold', 180)
         LWPS_NUM_POSITIONS = len(statistic_data)
         
         fig = plt.figure(figsize=(8, 4))
-        x_positions = np.arange(LWPS_UPPER_THRESHOLD, LWPS_NUM_POSITIONS + LWPS_UPPER_THRESHOLD)
+        x_positions = np.arange(LWPS_NUM_POSITIONS)
         plt.plot(x_positions, statistic_data)
         plt.xlabel('Relative midpoint positions')
         plt.ylabel('L-WPS score')
