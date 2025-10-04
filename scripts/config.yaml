@@ -20,5 +20,6 @@ lwps:
 # FDI test statistic parameters
 fdi:
   window_size: 125
+  step_size: 20
   endpoint_window: 10
   x: 0.999
