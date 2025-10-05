@@ -1,9 +1,13 @@
 from .lwps import LWPSStatistic
 from .fdi import FDIStatistic
+from .ifs import IFSStatistic
+from .pfe import PFEStatistic
 
 AVAILABLE_STATISTICS = {
     'lwps': LWPSStatistic,
     'fdi': FDIStatistic,
+    'ifs': IFSStatistic,
+    'pfe': PFEStatistic,
 }
 
 def create_statistic(name: str, config: dict):

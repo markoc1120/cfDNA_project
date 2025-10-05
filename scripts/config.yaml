@@ -23,3 +23,16 @@ fdi:
   step_size: 20
   endpoint_window: 10
   x: 0.999
+  matrix_shift: 250
+  
+# IFS test statistic parameters
+ifs:
+  window_size: 125
+  matrix_shift: 250
+
+# PFE test statistic parameters
+pfe:
+  window_size: 2000
+  min_length: 100
+  max_length: 300
+  matrix_shift: 250

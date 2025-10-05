@@ -38,6 +38,14 @@ rule all:
         expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fdi.npz", sample=SAMPLES),
         expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fdi.png", sample=SAMPLES),
         
+        # IFS
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ifs.npz", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ifs.png", sample=SAMPLES),
+
+        # PFE
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_pfe.npz", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_pfe.png", sample=SAMPLES),
+        
         # General visualization
         expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.coverage_plot.png", sample=SAMPLES),
         expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.fragment_lengths_plot.png", sample=SAMPLES),
@@ -116,6 +124,30 @@ rule calculate_fdi:
     script:
         "calculate_statistics.py"
         
+# IFS calculation
+rule calculate_ifs:
+    input:
+        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        config="config.yaml"
+    output:
+        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ifs.npz"
+    params:
+        statistic="ifs"
+    script:
+        "calculate_statistics.py"
+
+# PFE calculation
+rule calculate_pfe:
+    input:
+        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        config="config.yaml"
+    output:
+        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_pfe.npz"
+    params:
+        statistic="pfe"
+    script:
+        "calculate_statistics.py"
+        
 # L-WPS visualization
 rule visualize_lwps:
     input:
@@ -140,6 +172,34 @@ rule visualize_fdi:
         f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fdi.png"
     params:
         statistic="fdi",
+        sample="{sample}"
+    script:
+        "visualize_statistics.py"
+        
+# IFS visualization
+rule visualize_ifs:
+    input:
+        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        statistic=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ifs.npz",
+        config="config.yaml"
+    output:
+        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ifs.png"
+    params:
+        statistic="ifs",
+        sample="{sample}"
+    script:
+        "visualize_statistics.py"
+
+# PFE visualization
+rule visualize_pfe:
+    input:
+        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        statistic=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_pfe.npz",
+        config="config.yaml"
+    output:
+        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_pfe.png"
+    params:
+        statistic="pfe",
         sample="{sample}"
     script:
         "visualize_statistics.py"
