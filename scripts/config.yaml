@@ -36,3 +36,9 @@ pfe:
   min_length: 100
   max_length: 300
   matrix_shift: 250
+  
+# OCF test statistic parameters
+ocf:
+  window_half: 10
+  center_offset: 60
+  matrix_shift: 250

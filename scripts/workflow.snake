@@ -46,6 +46,10 @@ rule all:
         expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_pfe.npz", sample=SAMPLES),
         expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_pfe.png", sample=SAMPLES),
         
+        # OCF
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ocf.npy", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ocf.png", sample=SAMPLES),
+        
         # General visualization
         expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.coverage_plot.png", sample=SAMPLES),
         expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.fragment_lengths_plot.png", sample=SAMPLES),
@@ -148,6 +152,18 @@ rule calculate_pfe:
     script:
         "calculate_statistics.py"
         
+# OCF calculation
+rule calculate_ocf:
+    input:
+        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        config="config.yaml"
+    output:
+        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ocf.npy"
+    params:
+        statistic="ocf"
+    script:
+        "calculate_statistics.py"
+        
 # L-WPS visualization
 rule visualize_lwps:
     input:
@@ -200,6 +216,20 @@ rule visualize_pfe:
         f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_pfe.png"
     params:
         statistic="pfe",
+        sample="{sample}"
+    script:
+        "visualize_statistics.py"
+        
+# OCF visualization
+rule visualize_ocf:
+    input:
+        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        statistic=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ocf.npy",
+        config="config.yaml"
+    output:
+        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ocf.png"
+    params:
+        statistic="ocf",
         sample="{sample}"
     script:
         "visualize_statistics.py"
