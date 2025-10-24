@@ -16,7 +16,6 @@ if 'snakemake' in globals():
     output_paths = snakemake.output[0]
     
     statistic_name = snakemake.params.statistic
-    sample_name = snakemake.params.get('sample', None)
 
     with open(matrix_path, 'rb') as f:
         matrix = np.load(f)

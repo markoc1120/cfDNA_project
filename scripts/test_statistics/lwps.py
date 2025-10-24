@@ -72,15 +72,15 @@ class LWPSStatistic(TestStatistic):
                 if window_start <= frag_end <= window_end:    # ending in the window
                     internal_endpoints += count
             
-            lwps[pos_idx] = spanning_count - internal_endpoints
+            # making lwps independent of sequencing depth
+            lwps[pos_idx] = (spanning_count - internal_endpoints) / (spanning_count + internal_endpoints)
+            # lwps[pos_idx] = spanning_count - internal_endpoints
         
         return lwps
         
     def visualize(self, statistic_data, output_paths):
-        LWPS_NUM_POSITIONS = len(statistic_data)
-        
         fig = plt.figure(figsize=(8, 4))
-        x_positions = np.arange(LWPS_NUM_POSITIONS)
+        x_positions = np.arange(len(statistic_data))
         plt.plot(x_positions, statistic_data)
         plt.xlabel('Relative midpoint positions')
         plt.ylabel('L-WPS score')

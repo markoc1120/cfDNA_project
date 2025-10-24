@@ -22,43 +22,45 @@ RESULT_SORTED_DIR = config['result_sorted_dir']
 MATRIX_COLUMNS = config['matrix_columns']
 
 SAMPLES = [f.split('/')[-1].replace('.hg38.frag.gz', '') for f in glob.glob(f"{INPUT_DIR}*.hg38.frag.gz", recursive=True)]
+DHS_FILES = [f.split('/')[-1].replace('.bed', '') for f in glob.glob(f"{INPUT_DHS_DIR}*.bed", recursive=True)]
 
 rule all:
     input:
-        f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted.bed",
-        f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted_wl{MATRIX_COLUMNS}.bed",
+        expand(f"{RESULT_SORTED_DIR}{{dhs_file}}_sorted.bed", dhs_file=DHS_FILES),
+        expand(f"{RESULT_SORTED_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}.bed", dhs_file=DHS_FILES),
+        
         expand(f"{RESULT_SORTED_DIR}{{sample}}_sorted.hg38.frag.gz", sample=SAMPLES),
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy", sample=SAMPLES, dhs_file=DHS_FILES),
         
         # L-WPS
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.npy", sample=SAMPLES),
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.png", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_lwps.npy", sample=SAMPLES, dhs_file=DHS_FILES),
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_lwps.png", sample=SAMPLES, dhs_file=DHS_FILES),
         
         # FDI
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fdi.npz", sample=SAMPLES),
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fdi.png", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_fdi.npz", sample=SAMPLES, dhs_file=DHS_FILES),
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_fdi.png", sample=SAMPLES, dhs_file=DHS_FILES),
         
         # IFS
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ifs.npz", sample=SAMPLES),
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ifs.png", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_ifs.npz", sample=SAMPLES, dhs_file=DHS_FILES),
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_ifs.png", sample=SAMPLES, dhs_file=DHS_FILES),
 
         # PFE
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_pfe.npz", sample=SAMPLES),
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_pfe.png", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_pfe.npz", sample=SAMPLES, dhs_file=DHS_FILES),
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_pfe.png", sample=SAMPLES, dhs_file=DHS_FILES),
         
         # OCF
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ocf.npy", sample=SAMPLES),
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ocf.png", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_ocf.npy", sample=SAMPLES, dhs_file=DHS_FILES),
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_ocf.png", sample=SAMPLES, dhs_file=DHS_FILES),
         
         # General visualization
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.coverage_plot.png", sample=SAMPLES),
-        expand(f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.fragment_lengths_plot.png", sample=SAMPLES),
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.coverage_plot.png", sample=SAMPLES, dhs_file=DHS_FILES),
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.fragment_lengths_plot.png", sample=SAMPLES, dhs_file=DHS_FILES),
         
 rule check_dhs_data_sorting:
     input:
-        dhs=f"{INPUT_DHS_DIR}Lymphoid_DHS.bed"
+        dhs=f"{INPUT_DHS_DIR}{{dhs_file}}.bed"
     output:
-        dhs_sorted=f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted.bed"
+        dhs_sorted=f"{RESULT_SORTED_DIR}{{dhs_file}}_sorted.bed"
     shell:
         '''
         if cat {input.dhs} | awk -F'\t' '{{if(NR>1 && prev > $2 && $1 == prev_chr) {{print "PROBLEM"; exit 1}}; prev=$2; prev_chr=$1}}'; then
@@ -72,9 +74,9 @@ rule check_dhs_data_sorting:
         
 rule preprocess_dhs_sorted_data:
     input:
-        dhs_sorted=f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted.bed"
+        dhs_sorted=f"{RESULT_SORTED_DIR}{{dhs_file}}_sorted.bed"
     output:
-        dhs_sorted_preprocessed=f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted_wl{MATRIX_COLUMNS}.bed"
+        dhs_sorted_preprocessed=f"{RESULT_SORTED_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}.bed"
     script:
         "preprocess_dhs.py"
         
@@ -97,20 +99,20 @@ rule check_fragments_data_sorting:
 rule preprocess_fragments:
     input:
         fragment=f"{RESULT_SORTED_DIR}{{sample}}_sorted.hg38.frag.gz",
-        #dhs=f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted.bed"
-        dhs=f"{RESULT_SORTED_DIR}Lymphoid_DHS_sorted_wl{MATRIX_COLUMNS}.bed"
+        #dhs=f"{RESULT_SORTED_DIR}{{dhs_file}}_sorted.bed"
+        dhs=f"{RESULT_SORTED_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}.bed"
     output:
-        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy"
+        f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy"
     script:
         "preprocess_fragments.py"
         
 # LWPS calculation
 rule calculate_lwps:
     input:
-        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        matrix=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy",
         config="config.yaml"
     output:
-        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.npy"
+        f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_lwps.npy"
     params:
         statistic="lwps"
     script:
@@ -119,10 +121,10 @@ rule calculate_lwps:
 # FDI calculation
 rule calculate_fdi:
     input:
-        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        matrix=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy",
         config="config.yaml"
     output:
-        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fdi.npz"
+        f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_fdi.npz"
     params:
         statistic="fdi"
     script:
@@ -131,10 +133,10 @@ rule calculate_fdi:
 # IFS calculation
 rule calculate_ifs:
     input:
-        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        matrix=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy",
         config="config.yaml"
     output:
-        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ifs.npz"
+        f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_ifs.npz"
     params:
         statistic="ifs"
     script:
@@ -143,10 +145,10 @@ rule calculate_ifs:
 # PFE calculation
 rule calculate_pfe:
     input:
-        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        matrix=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy",
         config="config.yaml"
     output:
-        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_pfe.npz"
+        f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_pfe.npz"
     params:
         statistic="pfe"
     script:
@@ -155,10 +157,10 @@ rule calculate_pfe:
 # OCF calculation
 rule calculate_ocf:
     input:
-        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        matrix=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy",
         config="config.yaml"
     output:
-        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ocf.npy"
+        f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_ocf.npy"
     params:
         statistic="ocf"
     script:
@@ -167,80 +169,75 @@ rule calculate_ocf:
 # L-WPS visualization
 rule visualize_lwps:
     input:
-        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
-        statistic=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.npy",
+        matrix=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy",
+        statistic=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_lwps.npy",
         config="config.yaml"
     output:
-        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_lwps.png"
+        f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_lwps.png"
     params:
         statistic="lwps",
-        sample="{sample}"
     script:
         "visualize_statistics.py"
 
 # FDI visualization
 rule visualize_fdi:
     input:
-        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
-        statistic=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fdi.npz",
+        matrix=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy",
+        statistic=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_fdi.npz",
         config="config.yaml"
     output:
-        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_fdi.png"
+        f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_fdi.png"
     params:
         statistic="fdi",
-        sample="{sample}"
     script:
         "visualize_statistics.py"
         
 # IFS visualization
 rule visualize_ifs:
     input:
-        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
-        statistic=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ifs.npz",
+        matrix=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy",
+        statistic=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_ifs.npz",
         config="config.yaml"
     output:
-        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ifs.png"
+        f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_ifs.png"
     params:
         statistic="ifs",
-        sample="{sample}"
     script:
         "visualize_statistics.py"
 
 # PFE visualization
 rule visualize_pfe:
     input:
-        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
-        statistic=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_pfe.npz",
+        matrix=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy",
+        statistic=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_pfe.npz",
         config="config.yaml"
     output:
-        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_pfe.png"
+        f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_pfe.png"
     params:
         statistic="pfe",
-        sample="{sample}"
     script:
         "visualize_statistics.py"
         
 # OCF visualization
 rule visualize_ocf:
     input:
-        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
-        statistic=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ocf.npy",
+        matrix=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy",
+        statistic=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_ocf.npy",
         config="config.yaml"
     output:
-        f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted_ocf.png"
+        f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_ocf.png"
     params:
         statistic="ocf",
-        sample="{sample}"
     script:
         "visualize_statistics.py"
         
 # General visualization
 rule visualize_matrix:
     input:
-        matrix=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.npy",
+        matrix=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy",
         config="config.yaml"
     output:
-        coverage_plot=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.coverage_plot.png",
-        fragment_lengths_plot=f"{RESULT_DIR}{{sample}}__Lymphoid_DHS_sorted.fragment_lengths_plot.png",
+        coverage_plot=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.coverage_plot.png",
+        fragment_lengths_plot=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.fragment_lengths_plot.png",
     script:
         "visualize_matrix.py"

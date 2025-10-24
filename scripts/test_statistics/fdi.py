@@ -14,7 +14,8 @@ class FDIStatistic(TestStatistic):
     
     def calculate(self, matrix):
         # Get parameters from config
-        X = self.config.get('x', 0.999)
+        X = self.config.get('x', 0.9)
+        Y = self.config.get('y', 500)
         ENDPOINT_WINDOW = self.config.get('endpoint_window', 10)
         WINDOW_SIZE = self.config.get('window_size', 125)
         STEP_SIZE = self.config.get('step_size', None)
@@ -32,7 +33,7 @@ class FDIStatistic(TestStatistic):
         coverage = self.calculate_coverage(matrix)
 
         # calculate endpoint dispersion matrix
-        dispersion_matrix = self.calculate_endpoint_dispersion(reads, matrix.shape[1], X, ENDPOINT_WINDOW)
+        dispersion_matrix = self.calculate_endpoint_dispersion(reads, matrix.shape[1], X, Y, ENDPOINT_WINDOW)
 
         # calculate FDI in non-overlapping windows
         non_overlap = self.calculate_windowed_fdi(coverage, dispersion_matrix, WINDOW_SIZE, MATRIX_SHIFT)
@@ -110,7 +111,7 @@ class FDIStatistic(TestStatistic):
         return coverage
 
 
-    def calculate_endpoint_dispersion(self, reads, matrix_columns, x, endpoint_window):
+    def calculate_endpoint_dispersion(self, reads, matrix_columns, x, y, endpoint_window):
         # dispersion_matrix[:, 0] = endpoint counts, dispersion_matrix[:, 1] = dispersion values
         dispersion_matrix = np.zeros((matrix_columns, 2))
 
@@ -138,13 +139,15 @@ class FDIStatistic(TestStatistic):
             local_density_start = np.sum(
                 dispersion_matrix[start-endpoint_window:start+endpoint_window+1, 0]
             ) - 1
-            dispersion_matrix[start, 1] += x ** local_density_start
+            scaled_density_start = local_density_start / y
+            dispersion_matrix[start, 1] += x ** scaled_density_start
 
             # calculate local density and dispersion for end endpoint  
             local_density_end = np.sum(
                 dispersion_matrix[end-endpoint_window:end+endpoint_window+1, 0]
             ) - 1
-            dispersion_matrix[end, 1] += x ** local_density_end
+            scaled_density_end = local_density_end / y
+            dispersion_matrix[end, 1] += x ** scaled_density_end
 
         return dispersion_matrix
 
@@ -166,7 +169,15 @@ class FDIStatistic(TestStatistic):
 
             # calculate coverage standard deviation in window
             window_coverage = coverage[start:end]
-            coverage_std = np.std(window_coverage)
+            
+            window_sum = np.sum(window_coverage)
+            if window_sum > 0:
+                # normalize the window coverage to get the probability distribution
+                normalized_window_coverage = window_coverage / window_sum
+                # independent of sequencing depth
+                coverage_std = np.std(normalized_window_coverage)
+            else:
+                coverage_std = 0.0
 
             # calculate endpoint dispersion in window
             window_endpoint_counts = np.sum(dispersion_matrix[start:end, 0])
@@ -214,7 +225,15 @@ class FDIStatistic(TestStatistic):
 
             # calculate coverage standard deviation in window
             window_coverage = coverage[start:end]
-            coverage_std = np.std(window_coverage)
+
+            window_sum = np.sum(window_coverage)
+            if window_sum > 0:
+                # normalize the window coverage to get the probability distribution
+                normalized_window_coverage = window_coverage / window_sum
+                # independent of sequencing depth
+                coverage_std = np.std(normalized_window_coverage)
+            else:
+                coverage_std = 0.0
 
             # calculate endpoint dispersion in window
             window_endpoint_counts = np.sum(dispersion_matrix[start:end, 0])
@@ -261,8 +280,7 @@ class FDIStatistic(TestStatistic):
                 statistic_data['overlapping_fdi_scores'],
                 label=f'overlapping (step={self.config.get("step_size", "?")})'
             )
-        
-        plt.axvline(x=1000, color='red', linestyle='--', linewidth=2, label='DHS site at 1000')
+        plt.axvline(x=2000, color='red', linestyle='--', linewidth=2, label='DHS site at 2000')
         plt.yscale('log')
         plt.xlabel('Relative midpoint positions')
         plt.ylabel('FDI score (log scale)')

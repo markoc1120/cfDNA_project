@@ -1,14 +1,17 @@
 # cfDNA Project Configuration
 env_name: "cfDNA_project"
 
-input_dir: "../raw_data/test/"
-input_dhs_dir: "../raw_data/dhs/"
-result_dir: "../data/test/"
+input_dir: "../raw_data/test_one/"
+input_dhs_dir: "../raw_data/dhs_one/"
+result_dir: "../data/test_one/"
+# input_dir: "../raw_data/test_small/"
+# input_dhs_dir: "../raw_data/dhs_small/"
+# result_dir: "../data/test_small/"
 result_sorted_dir: "../data/sorted/"
 
 # matrix dimensions
 matrix_rows: 500
-matrix_columns: 2500
+matrix_columns: 4500
 matrix_shift: 250
 
 # L-WPS test statistic parameters
@@ -19,10 +22,11 @@ lwps:
   
 # FDI test statistic parameters
 fdi:
-  window_size: 125
+  window_size: 250
   step_size: 20
   endpoint_window: 10
-  x: 0.999
+  x: 0.9
+  y: 500
   matrix_shift: 250
   
 # IFS test statistic parameters
@@ -32,7 +36,7 @@ ifs:
 
 # PFE test statistic parameters
 pfe:
-  window_size: 2000
+  window_size: 4000
   min_length: 100
   max_length: 300
   matrix_shift: 250

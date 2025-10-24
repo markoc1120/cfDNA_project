@@ -64,7 +64,7 @@ class PFEStatistic(TestStatistic):
         ax = plt.gca()
         ax.axis('off')
 
-        col_labels = ['Window start', 'Window end', 'PFE (bits)']
+        col_labels = ['Window start', 'Window end', 'PFE']
         table = plt.table(
             cellText=table_data,
             colLabels=col_labels,

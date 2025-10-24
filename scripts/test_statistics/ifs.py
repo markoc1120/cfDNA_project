@@ -17,11 +17,10 @@ class IFSStatistic(TestStatistic):
         matrix_rows, matrix_columns = matrix.shape
         lengths = np.arange(matrix_rows)
 
-        # this only incorporates those fragments that are in within -1250 bp and +1250 bp from the DHS sites
-        # maybe calculate this L (global metric) in preprocess_fragments.py to get a clearer picture
         total_counts = matrix.sum()
         if total_counts == 0:
-            L = 1.0
+            L = 1
+            total_counts = 1
         else:
             counts_per_length = matrix.sum(axis=1)
             L = np.average(lengths, weights=counts_per_length)
@@ -39,8 +38,9 @@ class IFSStatistic(TestStatistic):
             region = matrix[:, start:end]
             n = region.sum()
             if n > 0:
+                n_norm = n / total_counts
                 l = np.average(lengths, weights=region.sum(axis=1))
-                ifs = n * (1.0 + l / L)
+                ifs = n_norm * (1.0 + l / L)
             else:
                 ifs = 0.0
 
@@ -60,7 +60,7 @@ class IFSStatistic(TestStatistic):
         centers = [(s + e) // 2 for s, e in pos]
         plt.plot(centers, statistic_data['ifs_scores'], label='IFS')
 
-        plt.axvline(x=1000, color='red', linestyle='--', linewidth=2, label='DHS site at 1000')
+        plt.axvline(x=2000, color='red', linestyle='--', linewidth=2, label='DHS site at 2000')
         plt.xlabel('Relative midpoint positions')
         plt.ylabel('IFS score')
         plt.title(f'IFS across windows (window_size={self.config.get("window_size", 125)})')
