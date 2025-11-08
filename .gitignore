@@ -1,6 +1,7 @@
 data/
 raw_data/
 __pycache__/
+scripts/ipynbs/
 
 .snakemake*
 .python-version
