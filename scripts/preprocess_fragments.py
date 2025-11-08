@@ -13,6 +13,7 @@ with open(config_path, 'r') as f:
 
 MATRIX_ROWS = config['matrix_rows']
 MATRIX_COLUMNS = config['matrix_columns']
+HARDCUT_OFF_LOWER = config['hardcut_off_lower']
 
 
 logger = logging.getLogger(__name__)
@@ -56,6 +57,22 @@ class Preprocessor():
         parsed_fragment = line.strip().split('\t')
         chr, start, end = parsed_fragment[0:3]
         return chr, int(start), int(end)
+    
+    
+    def downsample_matrix(self, matrix: np.ndarray, target_sum: int) -> np.ndarray:
+        current_sum = np.sum(matrix)
+        
+        if current_sum == 0:
+            return matrix
+        if current_sum <= target_sum:
+            return matrix
+            
+        flat_matrix = matrix.flatten()
+        probabilities = flat_matrix / current_sum
+        
+        downsampled_flat = np.random.multinomial(target_sum, probabilities)
+        
+        return downsampled_flat.reshape(matrix.shape)
     
     # length vs fragments' relative midpoint
     def generate_matrix(self, should_save=True) -> np.ndarray:
@@ -101,9 +118,15 @@ class Preprocessor():
                 # only track fragments those are in our boundaries
                 if rel_midpoint >= 0 and rel_midpoint < MATRIX_COLUMNS:
                     result[fragment_length, rel_midpoint] += 1
-                    
-        if should_save:
-            np.save(self.output_file, result)
+        
+        total_sum = np.sum(result)
+        if total_sum >= HARDCUT_OFF_LOWER:
+            result = self.downsample_matrix(result, HARDCUT_OFF_LOWER)
+            if should_save:
+                logger.info(f"Saving matrix for {self.output_file}")
+                np.save(self.output_file, result)
+        else:
+            logger.warning(f"Total sum {total_sum} is below threshold. SKIPPING {self.output_file}.")
         return result
             
 if 'snakemake' in globals():

@@ -38,9 +38,10 @@ class IFSStatistic(TestStatistic):
             region = matrix[:, start:end]
             n = region.sum()
             if n > 0:
-                n_norm = n / total_counts
                 l = np.average(lengths, weights=region.sum(axis=1))
-                ifs = n_norm * (1.0 + l / L)
+                # n_norm = n / total_counts
+                # ifs = n_norm * (1.0 + l / L)
+                ifs = n * (1.0 + l / L)
             else:
                 ifs = 0.0
 

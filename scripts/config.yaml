@@ -1,18 +1,26 @@
 # cfDNA Project Configuration
 env_name: "cfDNA_project"
 
-input_dir: "../raw_data/test_one/"
-input_dhs_dir: "../raw_data/dhs_one/"
-result_dir: "../data/test_one/"
-# input_dir: "../raw_data/test_small/"
-# input_dhs_dir: "../raw_data/dhs_small/"
-# result_dir: "../data/test_small/"
+# input_dir: "../raw_data/cristiano_cfdnas_downsamples_dhs_one/"
+# input_dhs_dir: "../raw_data/dhs_one/"
+# result_sorted_dir: "../data/sorted/"
+# result_dir: "../data/cristiano_cfdnas_downsamples_dhs_one/"
+
+input_dir: "../raw_data/test_small/"
+input_dhs_dir: "../raw_data/dhs_small/"
 result_sorted_dir: "../data/sorted/"
+result_dir: "../data/test_small/"
+result_pca_dir: "../data/test_small_pca/"
+example_dhs: "Lymphoid_DHS"
+
+metadata_path: "../raw_data/cristiano_cfdnas/meta_data.csv"
+paper: "Genome-wide cell-free DNA fragmentation in patients with cancer"
 
 # matrix dimensions
 matrix_rows: 500
 matrix_columns: 4500
 matrix_shift: 250
+hardcut_off_lower: 400000  # for downsampling
 
 # L-WPS test statistic parameters
 lwps:

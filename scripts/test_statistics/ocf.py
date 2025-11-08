@@ -74,7 +74,8 @@ class OCFStatistic(TestStatistic):
             true_signal = ends_in_left_window + starts_in_right_window
             background = starts_in_left_window + ends_in_right_window
                 
-            ocf_scores[pos_idx] = (true_signal - background) / (true_signal + background)
+            # ocf_scores[pos_idx] = (true_signal - background) / (true_signal + background)
+            ocf_scores[pos_idx] = true_signal - background
 
         return ocf_scores
 

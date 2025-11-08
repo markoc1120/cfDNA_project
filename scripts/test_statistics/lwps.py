@@ -73,8 +73,8 @@ class LWPSStatistic(TestStatistic):
                     internal_endpoints += count
             
             # making lwps independent of sequencing depth
-            lwps[pos_idx] = (spanning_count - internal_endpoints) / (spanning_count + internal_endpoints)
-            # lwps[pos_idx] = spanning_count - internal_endpoints
+            # lwps[pos_idx] = (spanning_count - internal_endpoints) / (spanning_count + internal_endpoints)
+            lwps[pos_idx] = spanning_count - internal_endpoints
         
         return lwps
         
