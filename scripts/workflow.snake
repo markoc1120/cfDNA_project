@@ -21,6 +21,7 @@ RESULT_DIR = config['result_dir']
 RESULT_SORTED_DIR = config['result_sorted_dir']
 MATRIX_COLUMNS = config['matrix_columns']
 EXAMPLE_DHS = config['example_dhs']
+EXAMPLE_SAMPLE = config['example_sample']
 RESULT_PCA_DIR = config['result_pca_dir']
 
 SAMPLES = [f.split('/')[-1].replace('.hg38.frag.gz', '') for f in glob.glob(f"{INPUT_DIR}*.hg38.frag.gz", recursive=True)]
@@ -29,12 +30,21 @@ STATS = ['pfe', 'lwps', 'ifs', 'fdi', 'ocf']
 
 rule all:
     input:
+        # generate test statistics distribution for an example sample
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_lwps.png",
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_fdi.png",
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_ifs.png",
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_pfe.png",
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_ocf.png",
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.coverage_plot.png",
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.fragment_lengths_plot.png",
+        
+        # final results
         expand(f"{RESULT_DIR}feature_matrix_{{stat}}.npy", stat=STATS),
         expand(f"{RESULT_DIR}feature_matrix_{{stat}}_meta.npz", stat=STATS),
         f"{RESULT_PCA_DIR}fdi_{EXAMPLE_DHS}_pc1_weights.png",
         f"{RESULT_PCA_DIR}fdi_{EXAMPLE_DHS}_pca_by_disease.png",
         f"{RESULT_PCA_DIR}pfe_{EXAMPLE_DHS}_violin_disease.png",
-        f"{RESULT_PCA_DIR}classification_auc_by_stat.png",
         f"{RESULT_PCA_DIR}classification_pc1_auc_by_stat.png",
 
         
@@ -78,7 +88,7 @@ rule check_fragments_data_sorting:
         fi
         '''
 
-checkpoint preprocess_fragments:
+rule preprocess_fragments:
     input:
         fragment=f"{RESULT_SORTED_DIR}{{sample}}_sorted.hg38.frag.gz",
         #dhs=f"{RESULT_SORTED_DIR}{{dhs_file}}_sorted.bed"
@@ -89,7 +99,7 @@ checkpoint preprocess_fragments:
         "preprocess_fragments.py"
         
 # LWPS calculation
-rule calculate_lwps:
+checkpoint calculate_lwps:
     input:
         matrix=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy",
         config="config.yaml"
@@ -147,7 +157,88 @@ rule calculate_ocf:
         statistic="ocf"
     script:
         "calculate_statistics.py"
+
+# L-WPS visualization
+rule visualize_lwps:
+    input:
+        matrix=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.npy",
+        statistic=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_lwps.npy",
+        config="config.yaml"
+    output:
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_lwps.png"
+    params:
+        statistic="lwps",
+        sample=EXAMPLE_SAMPLE
+    script:
+        "visualize_statistics.py"
+
+# FDI visualization
+rule visualize_fdi:
+    input:
+        matrix=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.npy",
+        statistic=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_fdi.npz",
+        config="config.yaml"
+    output:
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_fdi.png"
+    params:
+        statistic="fdi",
+        sample=EXAMPLE_SAMPLE
+    script:
+        "visualize_statistics.py"
         
+# IFS visualization
+rule visualize_ifs:
+    input:
+        matrix=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.npy",
+        statistic=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_ifs.npz",
+        config="config.yaml"
+    output:
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_ifs.png"
+    params:
+        statistic="ifs",
+        sample=EXAMPLE_SAMPLE
+    script:
+        "visualize_statistics.py"
+
+# PFE visualization
+rule visualize_pfe:
+    input:
+        matrix=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.npy",
+        statistic=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_pfe.npz",
+        config="config.yaml"
+    output:
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_pfe.png"
+    params:
+        statistic="pfe",
+        sample=EXAMPLE_SAMPLE
+    script:
+        "visualize_statistics.py"
+        
+# OCF visualization
+rule visualize_ocf:
+    input:
+        matrix=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.npy",
+        statistic=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_ocf.npy",
+        config="config.yaml"
+    output:
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_ocf.png"
+    params:
+        statistic="ocf",
+        sample=EXAMPLE_SAMPLE
+    script:
+        "visualize_statistics.py"
+        
+# General visualization
+rule visualize_matrix:
+    input:
+        matrix=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.npy",
+        config="config.yaml"
+    output:
+        coverage_plot=f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.coverage_plot.png",
+        fragment_lengths_plot=f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.fragment_lengths_plot.png",
+    script:
+        "visualize_matrix.py"        
+
 # merge same test statistics 
 rule build_feature_matrices:
     input:
@@ -185,19 +276,7 @@ rule pca_plots:
     script:
         "pca.py"
         
-rule classification_raw:
-    input:
-        matrices=expand(f"{RESULT_DIR}feature_matrix_{{stat}}.npy", stat=STATS),
-        metas=expand(f"{RESULT_DIR}feature_matrix_{{stat}}_meta.npz", stat=STATS),
-        config="config.yaml",
-    output:
-        auc_plot=f"{RESULT_PCA_DIR}classification_auc_by_stat.png"
-    params:
-        stats=STATS,
-    script:
-        "classification_svc_raw.py"
-        
-rule classification_pc1:
+rule classification:
     input:
         matrices=expand(f"{RESULT_DIR}feature_matrix_{{stat}}.npy", stat=STATS),
         metas=expand(f"{RESULT_DIR}feature_matrix_{{stat}}_meta.npz", stat=STATS),
@@ -207,4 +286,4 @@ rule classification_pc1:
     params:
         stats=STATS,
     script:
-        "classification_svc_pc1.py"
+        "classification_svc.py"
