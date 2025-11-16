@@ -6,7 +6,7 @@
 #
 # conda create -n cfDNA_project -y snakemake snakemake-executor-plugin-slurm numpy
 # conda activate cfDNA_project
-# snakemake -s workflow.snake --executor slurm -j 20 --use-conda --default-resources slurm_account=Fragmentomics --group-components lwps=50 fdi=50 ifs=50 pfe=50 ocf=50
+# snakemake -s workflow.snake --executor slurm -j 20 --use-conda --default-resources slurm_account=Fragmentomics --group-components prep_frag=50 lwps=50 fdi=50 ifs=50 pfe=50 ocf=50
 #
 #######################################
 import glob
@@ -105,7 +105,8 @@ rule preprocess_fragments:
     output:
         f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy"
     resources:
-        runtime=5
+        runtime=5,
+        mem_mb=60
     group: "prep_frag"
     script:
         "preprocess_fragments.py"
@@ -120,7 +121,7 @@ rule calculate_lwps:
     params:
         statistic="lwps"
     resources:
-        mem_mb=20,
+        mem_mb=100,
         runtime=30
     group: "lwps"
     script:
@@ -152,7 +153,7 @@ rule calculate_ifs:
     params:
         statistic="ifs"
     resources:
-        mem_mb=20,
+        mem_mb=60,
         runtime=30
     group: "ifs"
     script:
@@ -168,7 +169,7 @@ rule calculate_pfe:
     params:
         statistic="pfe"
     resources:
-        mem_mb=20,
+        mem_mb=60,
         runtime=30
     group: "pfe"
     script:
@@ -184,7 +185,7 @@ rule calculate_ocf:
     params:
         statistic="ocf"
     resources:
-        mem_mb=20,
+        mem_mb=100,
         runtime=30
     group: "ocf"
     script:

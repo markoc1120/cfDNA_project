@@ -29,6 +29,12 @@ def load_vectors(stat_name: str, metadata_map: dict, data_dir: str, dhs_files):
         for dhs in dhs_files:
             fname = pattern.format(sid=sid, dhs=dhs)
             path = os.path.join(data_dir, fname)
+            
+            # skip if preprocessing marked this pair as low coverage
+            matrix_base = os.path.join(data_dir, f"{sid}__{dhs}_sorted.npy")
+            if os.path.exists(matrix_base + '.skip'):
+                continue
+                
             try:
                 if path.endswith('.npy'):
                     vec = np.load(path)

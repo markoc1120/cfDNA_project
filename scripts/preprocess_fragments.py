@@ -122,17 +122,20 @@ class Preprocessor():
         total_sum = np.sum(result)
         if total_sum >= HARDCUT_OFF_LOWER:
             result = self.downsample_matrix(result, HARDCUT_OFF_LOWER)
-#             if should_save:
-#                 logger.info(f"Saving matrix for {self.output_file}")
-#                 np.save(self.output_file, result)
+            if should_save:
+                logger.info(f"Saving matrix for {self.output_file}")
+                np.save(self.output_file, result)
         else:
             logger.warning(f"Total sum {total_sum} is below threshold.")
+            if should_save:
+                np.save(self.output_file, np.zeros_like(result))
+                open(self.output_file + '.skip', 'w').close()
         
         # skip those fragmetns which are under the HARDCUT_OFF_LOWER, 
         # the problem is that workflow rule expects files for all samples
-        if should_save:
-                logger.info(f"Saving matrix for {self.output_file}")
-                np.save(self.output_file, result)
+#         if should_save:
+#                 logger.info(f"Saving matrix for {self.output_file}")
+#                 np.save(self.output_file, result)
         return result
             
 if 'snakemake' in globals():
