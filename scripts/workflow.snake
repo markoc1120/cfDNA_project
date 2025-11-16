@@ -6,7 +6,7 @@
 #
 # conda create -n cfDNA_project -y snakemake snakemake-executor-plugin-slurm numpy
 # conda activate cfDNA_project
-# snakemake -s workflow.snake --executor slurm -j 0 --use-conda --default-resources slurm_account=Fragmentomics
+# snakemake -s workflow.snake --executor slurm -j 20 --use-conda --default-resources slurm_account=Fragmentomics --group-components lwps=50 fdi=50 ifs=50 pfe=50 ocf=50
 #
 #######################################
 import glob
@@ -53,6 +53,9 @@ rule check_dhs_data_sorting:
         dhs=f"{INPUT_DHS_DIR}{{dhs_file}}.bed"
     output:
         dhs_sorted=f"{RESULT_SORTED_DIR}{{dhs_file}}_sorted.bed"
+    resources:
+        runtime=5
+    group: "sort_dhs"
     shell:
         '''
         if cat {input.dhs} | awk -F'\t' '{{if(NR>1 && prev > $2 && $1 == prev_chr) {{print "PROBLEM"; exit 1}}; prev=$2; prev_chr=$1}}'; then
@@ -69,6 +72,9 @@ rule preprocess_dhs_sorted_data:
         dhs_sorted=f"{RESULT_SORTED_DIR}{{dhs_file}}_sorted.bed"
     output:
         dhs_sorted_preprocessed=f"{RESULT_SORTED_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}.bed"
+    resources:
+        runtime=5
+    group: "prep_dhs"
     script:
         "preprocess_dhs.py"
         
@@ -77,6 +83,9 @@ rule check_fragments_data_sorting:
         fragment=f"{INPUT_DIR}{{sample}}.hg38.frag.gz",
     output:
         fragment_sorted=f"{RESULT_SORTED_DIR}{{sample}}_sorted.hg38.frag.gz"
+    resources:
+        runtime=5
+    group: "sort_frag"
     shell:
         '''
         if zcat {input.fragment} | awk -F'\t' '{{if(NR>1 && prev > $2 && $1 == prev_chr) {{print "PROBLEM"; exit 1}}; prev=$2; prev_chr=$1}}'; then
@@ -95,11 +104,14 @@ rule preprocess_fragments:
         dhs=f"{RESULT_SORTED_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}.bed"
     output:
         f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy"
+    resources:
+        runtime=5
+    group: "prep_frag"
     script:
         "preprocess_fragments.py"
         
 # LWPS calculation
-checkpoint calculate_lwps:
+rule calculate_lwps:
     input:
         matrix=f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy",
         config="config.yaml"
@@ -107,6 +119,10 @@ checkpoint calculate_lwps:
         f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_lwps.npy"
     params:
         statistic="lwps"
+    resources:
+        mem_mb=20,
+        runtime=30
+    group: "lwps"
     script:
         "calculate_statistics.py"
 
@@ -119,6 +135,10 @@ rule calculate_fdi:
         f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_fdi.npz"
     params:
         statistic="fdi"
+    resources:
+        mem_mb=300,
+        runtime=30
+    group: "fdi"
     script:
         "calculate_statistics.py"
         
@@ -131,6 +151,10 @@ rule calculate_ifs:
         f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_ifs.npz"
     params:
         statistic="ifs"
+    resources:
+        mem_mb=20,
+        runtime=30
+    group: "ifs"
     script:
         "calculate_statistics.py"
 
@@ -143,6 +167,10 @@ rule calculate_pfe:
         f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_pfe.npz"
     params:
         statistic="pfe"
+    resources:
+        mem_mb=20,
+        runtime=30
+    group: "pfe"
     script:
         "calculate_statistics.py"
         
@@ -155,6 +183,10 @@ rule calculate_ocf:
         f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_ocf.npy"
     params:
         statistic="ocf"
+    resources:
+        mem_mb=20,
+        runtime=30
+    group: "ocf"
     script:
         "calculate_statistics.py"
 
@@ -169,6 +201,8 @@ rule visualize_lwps:
     params:
         statistic="lwps",
         sample=EXAMPLE_SAMPLE
+    resources:
+        runtime=1
     script:
         "visualize_statistics.py"
 
@@ -183,6 +217,8 @@ rule visualize_fdi:
     params:
         statistic="fdi",
         sample=EXAMPLE_SAMPLE
+    resources:
+        runtime=1
     script:
         "visualize_statistics.py"
         
@@ -197,6 +233,8 @@ rule visualize_ifs:
     params:
         statistic="ifs",
         sample=EXAMPLE_SAMPLE
+    resources:
+        runtime=1
     script:
         "visualize_statistics.py"
 
@@ -211,6 +249,8 @@ rule visualize_pfe:
     params:
         statistic="pfe",
         sample=EXAMPLE_SAMPLE
+    resources:
+        runtime=1
     script:
         "visualize_statistics.py"
         
@@ -225,6 +265,8 @@ rule visualize_ocf:
     params:
         statistic="ocf",
         sample=EXAMPLE_SAMPLE
+    resources:
+        runtime=1
     script:
         "visualize_statistics.py"
         
@@ -236,6 +278,8 @@ rule visualize_matrix:
     output:
         coverage_plot=f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.coverage_plot.png",
         fragment_lengths_plot=f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.fragment_lengths_plot.png",
+    resources:
+        runtime=1
     script:
         "visualize_matrix.py"        
 
@@ -258,6 +302,8 @@ rule build_feature_matrices:
     output:
         matrices=expand(f"{RESULT_DIR}feature_matrix_{{stat}}.npy", stat=STATS),
         metas=expand(f"{RESULT_DIR}feature_matrix_{{stat}}_meta.npz", stat=STATS)
+    resources:
+        runtime=5
     script:
         "build_matrices.py"
         
@@ -273,6 +319,8 @@ rule pca_plots:
         f"{RESULT_PCA_DIR}pfe_{EXAMPLE_DHS}_violin_disease.png",
     params:
         stats=STATS
+    resources:
+        runtime=1
     script:
         "pca.py"
         
@@ -285,5 +333,7 @@ rule classification:
         auc_plot=f"{RESULT_PCA_DIR}classification_pc1_auc_by_stat.png"
     params:
         stats=STATS,
+    resources:
+        runtime=1
     script:
         "classification_svc.py"
