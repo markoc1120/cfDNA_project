@@ -23,7 +23,6 @@ def parse_metadata(file_path: str, paper: str) -> dict:
 
 def load_vectors(stat_name: str, metadata_map: dict, data_dir: str, dhs_files):
     pattern, key = STATS[stat_name]
-    print(f'ASD: {dhs_files}')
 
     entries = []
     for sid, disease in metadata_map.items():
@@ -107,7 +106,6 @@ if 'snakemake' in globals():
         print(f'Processing: {stat}')
         df, loadings_df = load_vectors(stat, metadata_map, result_dir, dhs_files)
         
-        print(df)
         if df is not None:
             out_path = os.path.join(result_dir, f'feature_matrix_{stat}.parquet')
             df.to_parquet(out_path)
