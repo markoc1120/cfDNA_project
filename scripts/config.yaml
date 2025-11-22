@@ -2,10 +2,10 @@
 env_name: "cfDNA_project"
 
 input_dir: "../raw_data/cristiano_cfdnas/"
-input_dhs_dir: "../raw_data/dhs_small/"
+input_dhs_dir: "../raw_data/dhs/"
 result_sorted_dir: "../data/sorted/"
-result_dir: "../data/cristiano_cfdnas_dhs_small/"
-result_pca_dir: "../data/cristiano_cfdnas_dhs_small_pca/"
+result_dir: "../data/cristiano_cfdnas_dhs/"
+result_pca_dir: "../data/cristiano_cfdnas_dhs_pca/"
 
 # input_dir: "../raw_data/test_small/"
 # input_dhs_dir: "../raw_data/dhs_small/"
@@ -22,7 +22,7 @@ paper: "Genome-wide cell-free DNA fragmentation in patients with cancer"
 matrix_rows: 500
 matrix_columns: 4500
 matrix_shift: 250
-hardcut_off_lower: 400000  # for downsampling
+hardcut_off_lower: 200000  # for downsampling
 
 # L-WPS test statistic parameters
 lwps:

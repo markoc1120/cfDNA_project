@@ -128,7 +128,7 @@ class Preprocessor():
         else:
             logger.warning(f"Total sum {total_sum} is below threshold.")
             if should_save:
-                np.save(self.output_file, np.zeros_like(result))
+                np.save(self.output_file, result)
                 open(self.output_file + '.skip', 'w').close()
         
         # skip those fragmetns which are under the HARDCUT_OFF_LOWER, 

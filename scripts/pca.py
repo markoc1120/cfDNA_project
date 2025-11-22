@@ -52,6 +52,7 @@ def plot_stat(matrix, dhs_sites, disease_labels, stat_name, out_dir):
         if filtered_matrix.shape[0] < 2 or filtered_matrix.shape[1] < 2:
             continue
 
+        # do the pca jointly
         pca = PCA(n_components=min(10, filtered_matrix.shape[1], filtered_matrix.shape[0]))
         X_pca = pca.fit_transform(filtered_matrix)
         expl_var = pca.explained_variance_ratio_
