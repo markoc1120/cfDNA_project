@@ -1,11 +1,11 @@
 # cfDNA Project Configuration
 env_name: "cfDNA_project"
 
-input_dir: "../raw_data/cristiano_cfdnas/"
-input_dhs_dir: "../raw_data/dhs/"
-result_sorted_dir: "../data/sorted/"
-result_dir: "../data/cristiano_cfdnas_dhs/"
-result_pca_dir: "../data/cristiano_cfdnas_dhs_pca/"
+# input_dir: "../raw_data/cristiano_cfdnas/"
+# input_dhs_dir: "../raw_data/dhs/"
+# result_sorted_dir: "../data/sorted/"
+# result_dir: "../data/cristiano_cfdnas_dhs/"
+# result_pca_dir: "../data/cristiano_cfdnas_dhs_pca/"
 
 # input_dir: "../raw_data/test_small/"
 # input_dhs_dir: "../raw_data/dhs_small/"
@@ -13,10 +13,21 @@ result_pca_dir: "../data/cristiano_cfdnas_dhs_pca/"
 # result_dir: "../data/test_small/"
 # result_pca_dir: "../data/test_small_pca/"
 
+# example_dhs: "Lymphoid_DHS"
+# example_sample: "EE88171"
+# metadata_path: "../raw_data/cristiano_cfdnas/meta_data.csv"
+# paper: "Genome-wide cell-free DNA fragmentation in patients with cancer"
+
+input_dir: "../raw_data/moma_prostate/"
+input_dhs_dir: "../raw_data/dhs/"
+result_sorted_dir: "../data/sorted_moma/"
+result_dir: "../data/moma_prostate_dhs/"
+result_pca_dir: "../data/moma_prostate_dhs_pca/"
+
 example_dhs: "Lymphoid_DHS"
-example_sample: "EE88171"
-metadata_path: "../raw_data/cristiano_cfdnas/meta_data.csv"
-paper: "Genome-wide cell-free DNA fragmentation in patients with cancer"
+example_sample: "230808_Q19A02181A_IC_N282-lib410"
+metadata_path: "../raw_data/moma_prostate/meta_data.csv"
+paper: ""
 
 # matrix dimensions
 matrix_rows: 500

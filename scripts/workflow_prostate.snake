@@ -6,7 +6,7 @@
 #
 # conda create -n cfDNA_project -y snakemake snakemake-executor-plugin-slurm numpy
 # conda activate cfDNA_project
-# snakemake -s workflow_project.snake --executor slurm -j 20 --use-conda --default-resources slurm_account=Fragmentomics --group-components sort_dhs=50 prep_dhs=50 sort_frag=50 prep_frag=50 lwps=50 fdi=50 ifs=50 pfe=50 ocf=50
+# snakemake -s workflow_prostate.snake --executor slurm -j 20 --use-conda --default-resources slurm_account=Fragmentomics --group-components sort_dhs=50 prep_dhs=50 sort_frag=50 prep_frag=50 lwps=50 fdi=50 ifs=50 pfe=50 ocf=50
 #
 #######################################
 import glob
@@ -24,19 +24,39 @@ EXAMPLE_DHS = config['example_dhs']
 EXAMPLE_SAMPLE = config['example_sample']
 RESULT_PCA_DIR = config['result_pca_dir']
 
-SAMPLES = [f.split('/')[-1].replace('.hg38.frag.gz', '') for f in glob.glob(f"{INPUT_DIR}*.hg38.frag.gz", recursive=True)]
+SAMPLES = [f.split('/')[-1].replace('.frag.tsv.gz', '') for f in glob.glob(f"{INPUT_DIR}*.frag.tsv.gz", recursive=True)]
 DHS_FILES = [f.split('/')[-1].replace('.bed', '') for f in glob.glob(f"{INPUT_DHS_DIR}*.bed", recursive=True)]
 STATS = ['pfe', 'lwps', 'ifs', 'fdi', 'ocf']
 STATS_WITHOUT_PFE = [s for s in STATS if s != 'pfe']
 
 rule all:
     input:
-        # final results
+        # L-WPS
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_lwps.npy", sample=SAMPLES, dhs_file=DHS_FILES),
+        
+        # FDI
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_fdi.npz", sample=SAMPLES, dhs_file=DHS_FILES),
+        
+        # IFS
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_ifs.npz", sample=SAMPLES, dhs_file=DHS_FILES),
+        
+        # PFE
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_pfe.npz", sample=SAMPLES, dhs_file=DHS_FILES),
+        
+        # OCF
+        expand(f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted_ocf.npy", sample=SAMPLES, dhs_file=DHS_FILES),
+        
+        # generate test statistics distribution for an example sample
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_lwps.png",
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_fdi.png",
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_ifs.png",
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_pfe.png",
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_ocf.png",
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.coverage_plot.png",
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.fragment_lengths_plot.png",
+        
         expand(f"{RESULT_DIR}feature_matrix_{{stat}}.parquet", stat=STATS),
         expand(f"{RESULT_DIR}{{stat}}_pca_loadings.csv", stat=STATS_WITHOUT_PFE),
-        f"{RESULT_PCA_DIR}fdi_pc1_loadings.png",
-        f"{RESULT_PCA_DIR}fdi_{EXAMPLE_DHS}_pca_by_disease.png",
-        f"{RESULT_PCA_DIR}pfe_{EXAMPLE_DHS}_violin_disease.png",
 
         
 rule check_dhs_data_sorting:
@@ -73,9 +93,9 @@ rule preprocess_dhs_sorted_data:
         
 rule check_fragments_data_sorting:
     input:
-        fragment=f"{INPUT_DIR}{{sample}}.hg38.frag.gz",
+        fragment=f"{INPUT_DIR}{{sample}}.frag.tsv.gz",
     output:
-        fragment_sorted=f"{RESULT_SORTED_DIR}{{sample}}_sorted.hg38.frag.gz"
+        fragment_sorted=f"{RESULT_SORTED_DIR}{{sample}}_sorted.frag.tsv.gz"
     resources:
         runtime=5,
         mem_mb=100
@@ -93,13 +113,13 @@ rule check_fragments_data_sorting:
 
 rule preprocess_fragments:
     input:
-        fragment=f"{RESULT_SORTED_DIR}{{sample}}_sorted.hg38.frag.gz",
+        fragment=f"{RESULT_SORTED_DIR}{{sample}}_sorted.frag.tsv.gz",
         #dhs=f"{RESULT_SORTED_DIR}{{dhs_file}}_sorted.bed"
         dhs=f"{RESULT_SORTED_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}.bed"
     output:
         f"{RESULT_DIR}{{sample}}__{{dhs_file}}_sorted.npy"
     resources:
-        runtime=30,
+        runtime=600,
         mem_mb=100
     group: "prep_frag"
     script:
@@ -115,8 +135,8 @@ rule calculate_lwps:
     params:
         statistic="lwps"
     resources:
-        mem_mb=100,
-        runtime=30
+        mem_mb=200,
+        runtime=60
     group: "lwps"
     script:
         "calculate_statistics.py"
@@ -132,7 +152,7 @@ rule calculate_fdi:
         statistic="fdi"
     resources:
         mem_mb=300,
-        runtime=30
+        runtime=60
     group: "fdi"
     script:
         "calculate_statistics.py"
@@ -147,8 +167,8 @@ rule calculate_ifs:
     params:
         statistic="ifs"
     resources:
-        mem_mb=60,
-        runtime=30
+        mem_mb=200,
+        runtime=60
     group: "ifs"
     script:
         "calculate_statistics.py"
@@ -163,8 +183,8 @@ rule calculate_pfe:
     params:
         statistic="pfe"
     resources:
-        mem_mb=100,
-        runtime=30
+        mem_mb=200,
+        runtime=60
     group: "pfe"
     script:
         "calculate_statistics.py"
@@ -179,12 +199,93 @@ rule calculate_ocf:
     params:
         statistic="ocf"
     resources:
-        mem_mb=160,
-        runtime=30
+        mem_mb=200,
+        runtime=60
     group: "ocf"
     script:
         "calculate_statistics.py"
+        
+# L-WPS visualization
+rule visualize_lwps:
+    input:
+        matrix=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.npy",
+        statistic=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_lwps.npy",
+        config="config.yaml"
+    output:
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_lwps.png"
+    params:
+        statistic="lwps",
+        sample=EXAMPLE_SAMPLE
+    script:
+        "visualize_statistics.py"
 
+# FDI visualization
+rule visualize_fdi:
+    input:
+        matrix=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.npy",
+        statistic=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_fdi.npz",
+        config="config.yaml"
+    output:
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_fdi.png"
+    params:
+        statistic="fdi",
+        sample=EXAMPLE_SAMPLE
+    script:
+        "visualize_statistics.py"
+        
+# IFS visualization
+rule visualize_ifs:
+    input:
+        matrix=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.npy",
+        statistic=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_ifs.npz",
+        config="config.yaml"
+    output:
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_ifs.png"
+    params:
+        statistic="ifs",
+        sample=EXAMPLE_SAMPLE
+    script:
+        "visualize_statistics.py"
+
+# PFE visualization
+rule visualize_pfe:
+    input:
+        matrix=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.npy",
+        statistic=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_pfe.npz",
+        config="config.yaml"
+    output:
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_pfe.png"
+    params:
+        statistic="pfe",
+        sample=EXAMPLE_SAMPLE
+    script:
+        "visualize_statistics.py"
+        
+# OCF visualization
+rule visualize_ocf:
+    input:
+        matrix=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.npy",
+        statistic=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_ocf.npy",
+        config="config.yaml"
+    output:
+        f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted_ocf.png"
+    params:
+        statistic="ocf",
+        sample=EXAMPLE_SAMPLE
+    script:
+        "visualize_statistics.py"
+        
+# General visualization
+rule visualize_matrix:
+    input:
+        matrix=f"{RESULT_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.npy",
+        config="config.yaml"
+    output:
+        coverage_plot=f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.coverage_plot.png",
+        fragment_lengths_plot=f"{RESULT_PCA_DIR}{EXAMPLE_SAMPLE}__{EXAMPLE_DHS}_sorted.fragment_lengths_plot.png",
+    script:
+        "visualize_matrix.py"
+        
 # merge same test statistics 
 rule build_feature_matrices:
     input:
@@ -205,25 +306,7 @@ rule build_feature_matrices:
         matrices=expand(f"{RESULT_DIR}feature_matrix_{{stat}}.parquet", stat=STATS),
         loadings=expand(f"{RESULT_DIR}{{stat}}_pca_loadings.csv", stat=STATS_WITHOUT_PFE),
     resources:
-        runtime=30,
+        runtime=60,
         mem_mb=8000
     script:
         "build_matrices_joint.py"
-        
-# visualize merged scores by DHS
-rule pca_plots:
-    input:
-        matrices=expand(f"{RESULT_DIR}feature_matrix_{{stat}}.parquet", stat=STATS),
-        loadings=expand(f"{RESULT_DIR}{{stat}}_pca_loadings.csv", stat=STATS_WITHOUT_PFE),
-        config="config.yaml",
-    output:
-        f"{RESULT_PCA_DIR}fdi_pc1_loadings.png",
-        f"{RESULT_PCA_DIR}fdi_{EXAMPLE_DHS}_pca_by_disease.png",
-        f"{RESULT_PCA_DIR}pfe_{EXAMPLE_DHS}_violin_disease.png",
-    params:
-        stats=STATS
-    resources:
-        runtime=30,
-        mem_mb=8000
-    script:
-        "pca_joint.py"
