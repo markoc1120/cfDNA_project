@@ -1,0 +1,12 @@
+# cfDNA Project Configuration
+env_name: "cfDNA_project"
+
+input_frags_dir: "../raw_data/cristiano_healthy/"
+input_dhs_dir: "../raw_data/lymphoid_dhs/"
+sorted_frags_dir: "../raw_data/cristiano_healhty_sorted/"
+sorted_dhs_dir: "../raw_data/lymphoid_dhs_sorted/"
+output_dir: "../data/cristiano_healhty/"
+
+matrix_columns: 2500
+matrix_rows: 300
+hardcut_off_lower: 199000
