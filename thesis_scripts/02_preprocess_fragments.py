@@ -13,6 +13,7 @@ with open(config_path, 'r') as f:
 
 MATRIX_ROWS = config['matrix_rows']
 MATRIX_COLUMNS = config['matrix_columns']
+MATRIX_SHIFT = config['matrix_shift']
 HARDCUT_OFF_LOWER = config['hardcut_off_lower']
 
 
@@ -120,9 +121,12 @@ class Preprocessor():
         
 #         if should_save:
 #             logger.info(f"Saving matrix for {self.output_file}")
+#             result = result[:, MATRIX_SHIFT:MATRIX_COLUMNS-MATRIX_SHIFT]
 #             np.save(self.output_file, result)
         total_sum = np.sum(result)
         if total_sum >= HARDCUT_OFF_LOWER:
+            # slice matrix: keep all lengths but only 250 - 2250 on the relative midpositions (note 1250 is the DHS site)
+            result = result[:, MATRIX_SHIFT:MATRIX_COLUMNS-MATRIX_SHIFT]
             result = self.downsample_matrix(result, HARDCUT_OFF_LOWER)
             if should_save:
                 logger.info(f"Saving matrix for {self.output_file}")

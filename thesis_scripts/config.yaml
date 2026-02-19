@@ -8,5 +8,10 @@ sorted_dhs_dir: "../raw_data/lymphoid_dhs_sorted/"
 output_dir: "../data/cristiano_healhty/"
 
 matrix_columns: 2500
+matrix_shift: 250
 matrix_rows: 300
-hardcut_off_lower: 199000
+hardcut_off_lower: 159000
+
+train_size: 80
+valid_size: 10
+batch_size: 32
