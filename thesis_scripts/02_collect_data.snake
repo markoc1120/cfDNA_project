@@ -1,0 +1,98 @@
+#######################################
+#
+# Snakemake workflow analyze genomes
+#
+# How to run:
+#
+# conda create -n cfDNA_project -y snakemake snakemake-executor-plugin-slurm numpy
+# conda activate cfDNA_project
+# snakemake -s 02_collect_data.snake --executor slurm -j 20 --use-conda --default-resources slurm_account=Fragmentomics --group-components sort_dhs=50 prep_dhs=50 downsample_dhs=50 sort_frag=50 prep_frag=50
+#
+#######################################
+
+import yaml
+import glob
+
+with open('config.yaml', 'r') as f:
+    config = yaml.safe_load(f)
+    
+    
+INPUT_FRAGS_DIR = config['input_frags_dir']
+INPUT_DHS_DIR = config['input_dhs_dir']
+SORTED_FRAGS_DIR = config['sorted_frags_dir']
+SORTED_DHS_DIR = config['sorted_dhs_dir']
+MATRIX_COLUMNS = config['matrix_columns']
+OUTPUT_DIR = config['output_dir']
+
+SAMPLES = [f.split('/')[-1].replace('.hg38.frag.gz', '') for f in glob.glob(f"{INPUT_FRAGS_DIR}*.hg38.frag.gz", recursive=True)]
+DHS_FILES = [f.split('/')[-1].replace('.bed', '') for f in glob.glob(f"{INPUT_DHS_DIR}*.bed", recursive=True)]
+
+rule all:
+    input:
+        # final results
+        expand(f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy", sample=SAMPLES, dhs_file=DHS_FILES)
+
+rule sort_dhs:
+    input:
+        dhs=f"{INPUT_DHS_DIR}{{dhs_file}}.bed"
+    output:
+        dhs_sorted=f"{SORTED_DHS_DIR}{{dhs_file}}_sorted.bed"
+    resources:
+        runtime=5,
+        mem_mb=200
+    group: "sort_dhs"
+    shell:
+        '''
+        sort -k1,1V -k2,2n {input.dhs} > {output.dhs_sorted}
+        '''
+        
+rule preprocess_dhs_sorted_data:
+    input:
+        dhs_sorted=f"{SORTED_DHS_DIR}{{dhs_file}}_sorted.bed"
+    output:
+        dhs_sorted_preprocessed=f"{SORTED_DHS_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}.bed"
+    resources:
+        runtime=30,
+        mem_mb=300
+    group: "prep_dhs"
+    script:
+        "02_preprocess_dhs.py"
+        
+rule downsample_dhs_files:
+    input:
+        dhs=expand(f"{SORTED_DHS_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}.bed", dhs_file=DHS_FILES)
+    output:
+        downsampled_dhs=expand(f"{SORTED_DHS_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}_downsampled.bed", dhs_file=DHS_FILES)
+    resources:
+        runtime=5,
+        mem_mb=300
+    group: "downsample_dhs"
+    script:
+        "02_downsample_dhs.py"
+        
+rule check_fragments_data_sorting:
+    input:
+        fragment=f"{INPUT_FRAGS_DIR}{{sample}}.hg38.frag.gz",
+    output:
+        fragment_sorted=f"{SORTED_FRAGS_DIR}{{sample}}_sorted.hg38.frag.gz"
+    resources:
+        runtime=60,
+        mem_mb=200
+    group: "sort_frag"
+    shell:
+        '''
+        zcat {input.fragment} | sort -k1,1V -k2,2n | gzip -c > {output.fragment_sorted}
+        '''
+
+rule preprocess_fragments:
+    input:
+        fragment=f"{SORTED_FRAGS_DIR}{{sample}}_sorted.hg38.frag.gz",
+        dhs=f"{SORTED_DHS_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}_downsampled.bed"
+    output:
+        f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy"
+    resources:
+        runtime=30,
+        mem_mb=100
+    group: "prep_frag"
+    script:
+        "02_preprocess_fragments.py"
