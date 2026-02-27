@@ -24,10 +24,11 @@ MATRIX_COLUMNS_HALF = MATRIX_COLUMNS // 2
 
 
 class Preprocessor():
-    def __init__(self, fragment_file, dhs_file, output_file):
+    def __init__(self, fragment_file, dhs_file, output_file, output_cov):
         self.fragment_file = fragment_file
         self.dhs_file = dhs_file
         self.output_file = output_file
+        self.output_cov = output_cov
         self.DHS_sites = None
         self.initial_DHS_length = None 
 
@@ -119,29 +120,36 @@ class Preprocessor():
                 if rel_midpoint >= 0 and rel_midpoint < MATRIX_COLUMNS:
                     result[fragment_length, rel_midpoint] += 1
         
-#         if should_save:
-#             logger.info(f"Saving matrix for {self.output_file}")
-#             result = result[:, MATRIX_SHIFT:MATRIX_COLUMNS-MATRIX_SHIFT]
-#             np.save(self.output_file, result)
-        total_sum = np.sum(result)
-        if total_sum >= HARDCUT_OFF_LOWER:
-            # slice matrix: keep all lengths but only 250 - 2250 on the relative midpositions (note 1250 is the DHS site)
+        if should_save:
+            logger.info(f"Saving matrix for {self.output_file} and cov for {self.output_cov}")
             result = result[:, MATRIX_SHIFT:MATRIX_COLUMNS-MATRIX_SHIFT]
-            result = self.downsample_matrix(result, HARDCUT_OFF_LOWER)
-            if should_save:
-                logger.info(f"Saving matrix for {self.output_file}")
-                np.save(self.output_file, result)
+            total_cov = np.sum(result)
+            np.save(self.output_file, result)
+            with open(self.output_cov, 'w') as cov_f:
+                cov_f.write(str(int(total_cov)))
+            
+        # total_sum = np.sum(result)
+        # if total_sum >= HARDCUT_OFF_LOWER:
+        #     # slice matrix: keep all lengths but only 250 - 2250 on the relative midpositions (note 1250 is the DHS site)
+        #     result = result[:, MATRIX_SHIFT:MATRIX_COLUMNS-MATRIX_SHIFT]
+        #     result = self.downsample_matrix(result, HARDCUT_OFF_LOWER)
+        #     if should_save:
+        #         logger.info(f"Saving matrix for {self.output_file}")
+        #         np.save(self.output_file, result)
         return result
           
 
 if 'snakemake' in globals():
     fragment_file = snakemake.input.fragment
     dhs_file = snakemake.input.dhs
-    output_file = snakemake.output[0]
+    output_matrix = snakemake.output.raw
+    output_cov = snakemake.output.cov
+    
 
     preprocessor = Preprocessor(
         fragment_file,
         dhs_file,
-        output_file
+        output_matrix,
+        output_cov,
     )
     preprocessor.generate_matrix()

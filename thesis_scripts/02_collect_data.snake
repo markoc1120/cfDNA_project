@@ -6,7 +6,7 @@
 #
 # conda create -n cfDNA_project -y snakemake snakemake-executor-plugin-slurm numpy
 # conda activate cfDNA_project
-# snakemake -s 02_collect_data.snake --executor slurm -j 20 --use-conda --default-resources slurm_account=Fragmentomics --group-components sort_dhs=50 prep_dhs=50 downsample_dhs=50 sort_frag=50 prep_frag=50
+# snakemake -s 02_collect_data.snake --executor slurm -j 20 --use-conda --default-resources slurm_account=Fragmentomics --group-components sort_dhs=50 prep_dhs=50 downsample_dhs=50 sort_frag=50 prep_frag=50 calc_min_cov=50 downsample_matrixes=50
 #
 #######################################
 
@@ -26,11 +26,12 @@ OUTPUT_DIR = config['output_dir']
 
 SAMPLES = [f.split('/')[-1].replace('.hg38.frag.gz', '') for f in glob.glob(f"{INPUT_FRAGS_DIR}*.hg38.frag.gz", recursive=True)]
 DHS_FILES = [f.split('/')[-1].replace('.bed', '') for f in glob.glob(f"{INPUT_DHS_DIR}*.bed", recursive=True)]
+MIN_COV_FILE = f"{OUTPUT_DIR}min_coverage.txt"
 
 rule all:
     input:
         # final results
-        expand(f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy", sample=SAMPLES, dhs_file=DHS_FILES)
+        expand(f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy", sample=SAMPLES, dhs_file=DHS_FILES)
 
 rule sort_dhs:
     input:
@@ -89,10 +90,36 @@ rule preprocess_fragments:
         fragment=f"{SORTED_FRAGS_DIR}{{sample}}_sorted.hg38.frag.gz",
         dhs=f"{SORTED_DHS_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}_downsampled.bed"
     output:
-        f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy"
+        raw=f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
+        cov=f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt"
     resources:
         runtime=30,
-        mem_mb=100
+        mem_mb=200
     group: "prep_frag"
     script:
         "02_preprocess_fragments.py"
+
+rule calculate_min_coverage:
+    input:
+        covs=expand(f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt", sample=SAMPLES, dhs_file=DHS_FILES)
+    output:
+        MIN_COV_FILE
+    resources:
+        runtime=10,
+        mem_mb=500,
+    group: "calc_min_cov"
+    script:
+        "02_calculate_min_coverage.py"
+
+rule downsample_matrices:
+    input:
+        raw=f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
+        mincov=MIN_COV_FILE
+    output:
+        f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"
+    resources:
+        runtime=30,
+        mem_mb=150
+    group: "downsample_matrixes"
+    script:
+        "02_downsample_matrices.py"
