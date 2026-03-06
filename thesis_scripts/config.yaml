@@ -11,6 +11,7 @@ output_dir: "../data/cristiano_healhty/"
 matrix_columns: 2500
 matrix_shift: 250
 matrix_rows: 300
+n_rebin_rows: 50
 hardcut_off_lower: 159000
 dhs_gc_bias_window: 200
 

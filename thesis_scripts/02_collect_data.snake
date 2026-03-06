@@ -6,7 +6,7 @@
 #
 # conda create -n cfDNA_project -y snakemake snakemake-executor-plugin-slurm numpy
 # conda activate cfDNA_project
-# snakemake -s 02_collect_data.snake --executor slurm -j 20 --use-conda --default-resources slurm_account=Fragmentomics --group-components sort_dhs=50 prep_dhs=50 downsample_dhs=50 sort_frag=50 prep_frag=50 calc_min_cov=50 downsample_matrixes=50
+# snakemake -s 02_collect_data.snake --executor slurm -j 20 --use-conda --default-resources slurm_account=Fragmentomics --group-components sort_dhs=50 prep_dhs=50 downsample_dhs=50 sort_frag=50 prep_frag=50 downsample_matrixes=50 rebin_matrices=50
 #
 #######################################
 
@@ -27,11 +27,12 @@ OUTPUT_DIR = config['output_dir']
 SAMPLES = [f.split('/')[-1].replace('.hg38.frag.gz', '') for f in glob.glob(f"{INPUT_FRAGS_DIR}*.hg38.frag.gz", recursive=True)]
 DHS_FILES = [f.split('/')[-1].replace('.bed', '') for f in glob.glob(f"{INPUT_DHS_DIR}*.bed", recursive=True)]
 MIN_COV_FILE = f"{OUTPUT_DIR}min_coverage.txt"
+BIN_EDGES_FILE = f"{OUTPUT_DIR}bin_edges.npy"
 
 rule all:
     input:
         # final results
-        expand(f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy", sample=SAMPLES, dhs_file=DHS_FILES)
+        expand(f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy", sample=SAMPLES, dhs_file=DHS_FILES)
 
 rule sort_dhs:
     input:
@@ -107,7 +108,6 @@ rule calculate_min_coverage:
     resources:
         runtime=10,
         mem_mb=500,
-    group: "calc_min_cov"
     script:
         "02_calculate_min_coverage.py"
 
@@ -120,6 +120,30 @@ rule downsample_matrices:
     resources:
         runtime=30,
         mem_mb=150
-    group: "downsample_matrixes"
+    group: "downsample_matrices"
     script:
         "02_downsample_matrices.py"
+
+rule compute_bin_edges:
+    input:
+        matrices=expand(f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy", sample=SAMPLES, dhs_file=DHS_FILES)
+    output:
+        bin_edges=BIN_EDGES_FILE
+    resources:
+        runtime=30,
+        mem_mb=8000
+    script:
+        "02_compute_bin_edges.py"
+
+rule rebin_matrices:
+    input:
+        matrix = f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
+        bin_edges = BIN_EDGES_FILE
+    output:
+        f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy"
+    resources:
+        runtime=10,
+        mem_mb=150
+    group: "rebin_matrices"
+    script:
+        "02_rebin_matrices.py"
