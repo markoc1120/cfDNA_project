@@ -14,7 +14,6 @@ with open(config_path, 'r') as f:
 MATRIX_ROWS = config['matrix_rows']
 MATRIX_COLUMNS = config['matrix_columns']
 MATRIX_SHIFT = config['matrix_shift']
-HARDCUT_OFF_LOWER = config['hardcut_off_lower']
 
 
 logger = logging.getLogger(__name__)

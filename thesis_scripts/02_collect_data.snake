@@ -1,12 +1,10 @@
 #######################################
 #
-# Snakemake workflow analyze genomes
-#
 # How to run:
 #
 # conda create -n cfDNA_project -y snakemake snakemake-executor-plugin-slurm numpy
 # conda activate cfDNA_project
-# snakemake -s 02_collect_data.snake --executor slurm -j 20 --use-conda --default-resources slurm_account=Fragmentomics --group-components sort_dhs=50 prep_dhs=50 downsample_dhs=50 sort_frag=50 prep_frag=50 downsample_matrixes=50 rebin_matrices=50
+# snakemake -s 02_collect_data.snake --executor slurm -j 20 --use-conda --default-resources slurm_account=Fragmentomics --group-components sort_dhs=50 prep_dhs=50 downsample_dhs=50 sort_frag=50 prep_frag=50 downsample_matrices=50 rebin_matrices=50
 #
 #######################################
 
@@ -18,16 +16,16 @@ with open('config.yaml', 'r') as f:
     
     
 INPUT_FRAGS_DIR = config['input_frags_dir']
-INPUT_DHS_DIR = config['input_dhs_dir']
+INPUT_DHS_DIR = config['training_dhs_dir']
 SORTED_FRAGS_DIR = config['sorted_frags_dir']
-SORTED_DHS_DIR = config['sorted_dhs_dir']
+SORTED_DHS_DIR = config['training_sorted_dhs_dir']
 MATRIX_COLUMNS = config['matrix_columns']
-OUTPUT_DIR = config['output_dir']
+OUTPUT_DIR = config['training_output_dir']
 
 SAMPLES = [f.split('/')[-1].replace('.hg38.frag.gz', '') for f in glob.glob(f"{INPUT_FRAGS_DIR}*.hg38.frag.gz", recursive=True)]
 DHS_FILES = [f.split('/')[-1].replace('.bed', '') for f in glob.glob(f"{INPUT_DHS_DIR}*.bed", recursive=True)]
-MIN_COV_FILE = f"{OUTPUT_DIR}min_coverage.txt"
-BIN_EDGES_FILE = f"{OUTPUT_DIR}bin_edges.npy"
+MIN_COV_FILE = config['training_min_coverage_file']
+BIN_EDGES_FILE = config['training_bin_edges_file']
 
 rule all:
     input:
@@ -118,7 +116,7 @@ rule downsample_matrices:
     output:
         f"{OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"
     resources:
-        runtime=30,
+        runtime=10,
         mem_mb=150
     group: "downsample_matrices"
     script:
