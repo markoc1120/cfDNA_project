@@ -1,0 +1,44 @@
+"""
+Usage:
+    # local
+    uv run just local-run
+
+    # SLURM
+    uv run just slurm-run
+
+    # dry run
+    uv run just dry-run
+"""
+
+# shared config
+include: "rules/common.smk"
+
+# include rule files
+include: "rules/preprocessing.smk"
+include: "rules/training.smk"
+include: "rules/inference.smk"
+
+
+# build final targets
+TARGETS = []
+
+if STAGES.get("generate_negatives", False):
+    TARGETS.append(f"{TRAIN_DHS_DIR}.negatives_done")
+
+if STAGES.get("collect_data", False):
+    TARGETS += expand(
+        f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy",
+        sample=SAMPLES, dhs_file=DHS_FILES,
+    )
+
+if STAGES.get("train", False):
+    TARGETS.append(TRAINING.get("save_checkpoint", MODEL["checkpoint"]))
+
+if STAGES.get("inference", False):
+    TARGETS += expand(
+        f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_score.txt",
+        sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
+    )
+
+rule all:
+    input: TARGETS

@@ -1,0 +1,94 @@
+# Stages to run (toggle on/off)
+stages:
+  generate_negatives: true
+  collect_data: true
+  train: true
+  inference: true
+  accessibility_scores: false
+  benchmark: false
+
+
+# Data paths
+data:
+  input_frags_dir: "raw_data/cristiano_healthy/"
+  sorted_frags_dir: "raw_data/cristiano_healthy_sorted/"
+  hg_38_2bit_file: "raw_data/hg38.2bit"
+
+  training_dhs_dir: "raw_data/training_dhs/"
+  training_sorted_dhs_dir: "raw_data/training_dhs_sorted/"
+  training_output_dir: "data/training_frags/"
+  training_min_coverage_file: "data/training_frags/min_coverage.txt"
+  training_bin_edges_file: "data/training_frags/bin_edges.npy"
+
+  inference_dhs_dir: "raw_data/inference_dhs/"
+  inference_frags_dir: "raw_data/cristiano_cfdnas/"
+  inference_sorted_frags_dir: "data/inference_sorted_frags/"
+  inference_sorted_dhs_dir: "raw_data/inference_dhs_sorted/"
+  inference_output_dir: "data/inference/"
+
+  accessibility_scores_dir: "data/cristiano_cfdnas_dhs/"
+  final_matrices_dir: "data/final_matrices/"
+  metadata_path: "raw_data/cristiano_cfdnas/meta_data.csv"
+  paper: "Genome-wide cell-free DNA fragmentation in patients with cancer"
+
+
+# Matrix
+matrix:
+  columns: 2500
+  rows: 300
+  shift: 250
+  n_rebin_rows: 50
+
+
+# Negative DHS generation
+negative_dhs:
+  gc_bias_window: 200
+  n_quantile_bins: 20
+  max_tries_multiplier: 50
+
+# Model (swap by changing name + checkpoint)
+model:
+  name: "cnn_model"
+  checkpoint: "models/cnn_rebinned_46x2000.pt"
+  use_rebinned: true
+  params: {}
+
+
+# Preprocessing transforms (applied in order)
+# options: "sum_normalization", "log_transform", "standardization", "slice"
+preprocessing:
+  transforms: []
+  # # example 1: sum normalize
+  # transforms:
+  #   - name: "sum_normalization"
+
+  # # example 2: slice + sum normalize + log
+  # transforms:
+  #   - name: "slice"
+  #     params: {ymin: 130, ymax: 200, xmin: 600, xmax: 1400}
+  #   - name: "sum_normalization"
+  #   - name: "log_transform"
+
+  # # example 3: sum normalize + log_transform + standardization
+  # transforms:
+  #   - name: "sum_normalization"
+  #   - name: "log_transform"
+  #   - name: "standardization"
+
+
+# Training hyperparameters
+training:
+  seed: 42
+  train_size: 80
+  valid_size: 10
+  batch_size: 32
+  n_epochs: 20
+  patience: 10
+  optimizer: "adam"
+  learning_rate: 0.001
+  scheduler: "reduce_on_plateau"
+  scheduler_params:
+    mode: "max"
+    patience: 3
+    factor: 0.1
+  save_checkpoint: "models/cnn_rebinned_46x2000.pt"
