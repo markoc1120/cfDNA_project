@@ -5,6 +5,7 @@ default-resources:
   slurm_account: Fragmentomics
   runtime: 30
   mem_mb: 500
+  disk_mb: 1000
 group-components:
   sort_dhs: 50
   prep_dhs: 50

@@ -45,7 +45,6 @@ dependencies:
       - attrs==26.1.0
       - bandit==1.9.4
       - certifi==2026.2.25
-      - cfdna-project==0.1.0
       - cfgv==3.5.0
       - charset-normalizer==3.4.6
       - colorama==0.4.6
@@ -166,6 +165,8 @@ dependencies:
       - smart-open==7.5.1
       - smmap==5.0.3
       - snakemake==9.17.2
+      - snakemake-executor-plugin-slurm==1.4.0
+      - snakemake-executor-plugin-slurm-jobstep==0.3.0
       - snakemake-interface-common==1.23.0
       - snakemake-interface-executor-plugins==9.4.0
       - snakemake-interface-logger-plugins==2.0.1
