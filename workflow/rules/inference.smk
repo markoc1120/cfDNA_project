@@ -1,12 +1,5 @@
 import glob as glob
 
-INFERENCE_DHS_DIR = DATA["inference_dhs_dir"]
-INFERENCE_SORTED_DHS_DIR = DATA["inference_sorted_dhs_dir"]
-INFERENCE_FRAGS_DIR = DATA["inference_frags_dir"]
-INFERENCE_SORTED_FRAGS_DIR = DATA["inference_sorted_frags_dir"]
-INFERENCE_OUTPUT_DIR = DATA["inference_output_dir"]
-INFERENCE_USE_REBINNED = MODEL.get("use_rebinned", True)
-
 INFERENCE_SAMPLES = [
     f.split('/')[-1].replace('.hg38.frag.gz', '')
     for f in glob.glob(f"{INFERENCE_FRAGS_DIR}*.hg38.frag.gz")
@@ -116,7 +109,7 @@ rule run_inference:
         min_cov=MIN_COV_FILE,
         checkpoint=MODEL["checkpoint"],
     output:
-        score=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_score.txt"
+        score=f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_score.txt"
     params:
         checkpoint=MODEL["checkpoint"],
         model_type=MODEL["name"],

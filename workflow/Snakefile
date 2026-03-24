@@ -17,6 +17,10 @@ include: "rules/common.smk"
 include: "rules/preprocessing.smk"
 include: "rules/training.smk"
 include: "rules/inference.smk"
+if STAGES.get("accessibility_scores", False):
+    include: "rules/accessibility_scores.smk"
+if STAGES.get("benchmark", False):
+    include: "rules/benchmark.smk"
 
 
 # build final targets
@@ -36,8 +40,36 @@ if STAGES.get("train", False):
 
 if STAGES.get("inference", False):
     TARGETS += expand(
-        f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_score.txt",
+        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_score.txt",
         sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
+    )
+
+if STAGES.get("accessibility_scores", False):
+    TARGETS += expand(
+        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_lwps.npy",
+        sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
+    )
+    TARGETS += expand(
+        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_ocf.npy",
+        sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
+    )
+    TARGETS += expand(
+        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_fdi.npz",
+        sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
+    )
+    TARGETS += expand(
+        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_ifs.npz",
+        sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
+    )
+    TARGETS += expand(
+        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_pfe.npz",
+        sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
+    )
+
+if STAGES.get("benchmark", False):
+    TARGETS += expand(
+        f"{FINAL_MATRICES_DIR}feature_matrix_{{stat}}.parquet",
+        stat=BENCH_STATS,
     )
 
 rule all:

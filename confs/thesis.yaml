@@ -4,32 +4,35 @@ stages:
   collect_data: true
   train: true
   inference: true
-  accessibility_scores: false
-  benchmark: false
+  accessibility_scores: true
+  benchmark: true
 
 
 # Data paths
 data:
-  input_frags_dir: "raw_data/cristiano_healthy/"
-  sorted_frags_dir: "raw_data/cristiano_healthy_sorted/"
-  hg_38_2bit_file: "raw_data/hg38.2bit"
-
+  # Input data should be created in the below folders:
+  input_frags_dir: "raw_data/training_frags/"
+  inference_frags_dir: "raw_data/inference_frags/"
   training_dhs_dir: "raw_data/training_dhs/"
+  inference_dhs_dir: "raw_data/inference_dhs/"
+  hg_38_2bit_file: "raw_data/hg38.2bit"
+  metadata_path: "raw_data/meta_data.csv"
+  paper: "Genome-wide cell-free DNA fragmentation in patients with cancer"
+
+  # The below folders are automatically generated:
+  sorted_frags_dir: "raw_data/training_frags_sorted/"
+
   training_sorted_dhs_dir: "raw_data/training_dhs_sorted/"
   training_output_dir: "data/training_frags/"
   training_min_coverage_file: "data/training_frags/min_coverage.txt"
   training_bin_edges_file: "data/training_frags/bin_edges.npy"
 
-  inference_dhs_dir: "raw_data/inference_dhs/"
-  inference_frags_dir: "raw_data/cristiano_cfdnas/"
   inference_sorted_frags_dir: "data/inference_sorted_frags/"
   inference_sorted_dhs_dir: "raw_data/inference_dhs_sorted/"
   inference_output_dir: "data/inference/"
 
-  accessibility_scores_dir: "data/cristiano_cfdnas_dhs/"
+  accessibility_scores_dir: "data/accessibility_scores/"
   final_matrices_dir: "data/final_matrices/"
-  metadata_path: "raw_data/cristiano_cfdnas/meta_data.csv"
-  paper: "Genome-wide cell-free DNA fragmentation in patients with cancer"
 
 
 # Matrix
@@ -92,3 +95,34 @@ training:
     patience: 3
     factor: 0.1
   save_checkpoint: "models/cnn_rebinned_46x2000.pt"
+
+
+# Accessibility score parameters
+lwps:
+  window_size: 120
+  lower_threshold: 120
+  upper_threshold: 180
+  matrix_shift: 250
+
+fdi:
+  window_size: 250
+  step_size: 20
+  endpoint_window: 10
+  x: 0.9
+  y: 500
+  matrix_shift: 250
+
+ifs:
+  window_size: 125
+  matrix_shift: 250
+
+pfe:
+  window_size: 4000
+  min_length: 100
+  max_length: 300
+  matrix_shift: 250
+
+ocf:
+  window_half: 10
+  center_offset: 60
+  matrix_shift: 250

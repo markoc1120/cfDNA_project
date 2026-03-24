@@ -1,16 +1,5 @@
 import glob
 
-INPUT_FRAGS_DIR = DATA["input_frags_dir"]
-TRAIN_DHS_DIR = DATA["training_dhs_dir"]
-SORTED_FRAGS_DIR = DATA["sorted_frags_dir"]
-TRAIN_SORTED_DHS_DIR = DATA["training_sorted_dhs_dir"]
-TRAIN_OUTPUT_DIR = DATA["training_output_dir"]
-MIN_COV_FILE = DATA["training_min_coverage_file"]
-BIN_EDGES_FILE = DATA["training_bin_edges_file"]
-MATRIX_COLUMNS = MATRIX["columns"]
-MATRIX_ROWS = MATRIX["rows"]
-MATRIX_SHIFT = MATRIX["shift"]
-
 SAMPLES = [
     f.split('/')[-1].replace('.hg38.frag.gz', '')
     for f in glob.glob(f"{INPUT_FRAGS_DIR}*.hg38.frag.gz")
