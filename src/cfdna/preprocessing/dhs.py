@@ -21,8 +21,8 @@ def preprocess_dhs(input_file: str, output_file: str, matrix_columns: int):
                 last_midpoint, curr_chr = float('-inf'), chr
 
             # parse string -> int
-            start, end = int(start), int(end)
-            midpoint = (end + start) // 2
+            start_int, end_int = int(start), int(end)
+            midpoint = (end_int + start_int) // 2
 
             # if there is not enough diff between midpoint (current) and last_midpoint -> overlapping -> continue
             if midpoint - last_midpoint <= matrix_columns:

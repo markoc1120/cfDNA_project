@@ -1,6 +1,7 @@
 import glob
 import re
 from collections import defaultdict
+from typing import DefaultDict
 
 import numpy as np
 import torch
@@ -16,11 +17,15 @@ def build_pairs(matrix_dir: str, suffix: str = 'downsampled'):
     """
     npy_files = glob.glob(f'{matrix_dir}*_{suffix}.npy')
 
-    mapping = defaultdict(lambda: {'negative': '', 'positive': ''})
+    mapping: DefaultDict[str, dict[str, str]] = defaultdict(
+        lambda: {'negative': '', 'positive': ''}
+    )
     for p in npy_files:
-        sid = re.search(SID_PATTERN, p)[0]
-        if not sid:
+        sid_result = re.search(SID_PATTERN, p)
+        if not sid_result:
             continue
+
+        sid = sid_result[0]
 
         is_neg = 'negative' in p.lower()
         if is_neg:

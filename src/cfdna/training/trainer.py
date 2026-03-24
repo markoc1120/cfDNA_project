@@ -30,7 +30,7 @@ def train(
     device='cpu',
 ):
     checkpoint_path = checkpoint_path or 'my_checkpoint.pt'
-    history = {'train_losses': [], 'train_metrics': [], 'valid_metrics': []}
+    history: dict[str, list] = {'train_losses': [], 'train_metrics': [], 'valid_metrics': []}
     best_metric = float('-inf')
     patience_counter = 0
     for epoch in range(n_epochs):

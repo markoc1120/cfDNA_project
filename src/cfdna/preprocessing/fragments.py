@@ -1,6 +1,7 @@
 import gzip
 import logging
 from collections import deque
+from typing import Deque
 
 import numpy as np
 
@@ -30,7 +31,7 @@ class Preprocessor:
         self.matrix_shift = matrix_shift
 
     def read_dhs_to_memory(self):
-        sites = deque()
+        sites: Deque[tuple[int, str]] = deque()
         with open(self.dhs_file, 'rt') as f:
             for line in f:
                 chr, start, end = line.split('\t')
