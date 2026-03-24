@@ -29,7 +29,7 @@ rule calculate_fdi:
     group: "fdi"
     script:
         "../scripts/calculate_statistics.py"
-        
+
 # IFS calculation
 rule calculate_ifs:
     input:
@@ -61,7 +61,7 @@ rule calculate_pfe:
     group: "pfe"
     script:
         "../scripts/calculate_statistics.py"
-        
+
 # OCF calculation
 rule calculate_ocf:
     input:
