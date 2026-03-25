@@ -4,7 +4,7 @@ rule calculate_lwps:
         matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
         config="confs/thesis.yaml"
     output:
-        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_lwps.npy"
+        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_lwps.npy")
     params:
         statistic="lwps"
     resources:
@@ -20,7 +20,7 @@ rule calculate_fdi:
         matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
         config="confs/thesis.yaml"
     output:
-        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_fdi.npz"
+        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_fdi.npz")
     params:
         statistic="fdi"
     resources:
@@ -36,7 +36,7 @@ rule calculate_ifs:
         matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
         config="confs/thesis.yaml"
     output:
-        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_ifs.npz"
+        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_ifs.npz")
     params:
         statistic="ifs"
     resources:
@@ -52,7 +52,7 @@ rule calculate_pfe:
         matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
         config="confs/thesis.yaml"
     output:
-        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_pfe.npz"
+        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_pfe.npz")
     params:
         statistic="pfe"
     resources:
@@ -68,7 +68,7 @@ rule calculate_ocf:
         matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
         config="confs/thesis.yaml"
     output:
-        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_ocf.npy"
+        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_ocf.npy")
     params:
         statistic="ocf"
     resources:

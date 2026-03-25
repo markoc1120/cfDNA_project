@@ -21,7 +21,7 @@ rule inference_preprocess_dhs:
     input:
         dhs=f"{INFERENCE_DHS_DIR}{{dhs_file}}.bed"
     output:
-        dhs_preprocessed=f"{INFERENCE_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed"
+        dhs_preprocessed=temp(f"{INFERENCE_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed")
     params:
         matrix_columns=MATRIX_COLUMNS
     resources:
@@ -36,8 +36,8 @@ rule inference_preprocess_fragments:
         fragment=f"{INFERENCE_FRAGS_DIR}{{sample}}.hg38.frag.gz",
         dhs=f"{INFERENCE_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed"
     output:
-        raw=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
-        cov=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt"
+        raw=temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy"),
+        cov=temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt")
     params:
         matrix_rows=MATRIX_ROWS,
         matrix_columns=MATRIX_COLUMNS,
@@ -54,7 +54,7 @@ rule inference_downsample_matrices:
         raw=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
         mincov=MIN_COV_FILE
     output:
-        f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"
+        temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy")
     resources:
         runtime=10,
         mem_mb=150
@@ -79,7 +79,7 @@ rule inference_rebin_matrices:
         matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
         bin_edges=BIN_EDGES_FILE
     output:
-        f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy"
+        temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy")
     resources:
         runtime=5,
         mem_mb=150
@@ -94,7 +94,7 @@ rule run_inference:
         min_cov=MIN_COV_FILE,
         checkpoint=MODEL["checkpoint"],
     output:
-        score=f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_score.txt"
+        score=temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_score.txt")
     params:
         checkpoint=MODEL["checkpoint"],
         model_type=MODEL["name"],

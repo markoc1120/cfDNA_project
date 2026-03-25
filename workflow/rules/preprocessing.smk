@@ -14,7 +14,7 @@ rule train_preprocess_dhs:
     input:
         dhs=f"{TRAIN_DHS_DIR}{{dhs_file}}.bed"
     output:
-        dhs_preprocessed=f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed"
+        dhs_preprocessed=temp(f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed")
     params:
         matrix_columns=MATRIX_COLUMNS
     resources:
@@ -28,7 +28,7 @@ rule train_downsample_dhs:
     input:
         dhs=expand(f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed", dhs_file=DHS_FILES)
     output:
-        downsampled_dhs=expand(f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed", dhs_file=DHS_FILES)
+        downsampled_dhs=temp(expand(f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed", dhs_file=DHS_FILES))
     resources:
         runtime=5,
         mem_mb=300
@@ -41,8 +41,8 @@ rule train_preprocess_fragments:
         fragment=f"{INPUT_FRAGS_DIR}{{sample}}.hg38.frag.gz",
         dhs=f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed"
     output:
-        raw=f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
-        cov=f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt"
+        raw=temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy"),
+        cov=temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt")
     params:
         matrix_rows=MATRIX_ROWS,
         matrix_columns=MATRIX_COLUMNS,
@@ -70,7 +70,7 @@ rule train_downsample_matrices:
         raw=f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
         mincov=MIN_COV_FILE
     output:
-        f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"
+        temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy")
     resources:
         runtime=10,
         mem_mb=150
@@ -97,7 +97,7 @@ rule rebin_matrices:
         matrix = f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
         bin_edges = BIN_EDGES_FILE
     output:
-        f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy"
+        temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy")
     resources:
         runtime=10,
         mem_mb=150

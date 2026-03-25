@@ -29,44 +29,12 @@ TARGETS = []
 if STAGES.get("generate_negatives", False):
     TARGETS.append(f"{TRAIN_DHS_DIR}.negatives_done")
 
-if STAGES.get("collect_data", False):
-    TARGETS += expand(
-        f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy",
-        sample=SAMPLES, dhs_file=DHS_FILES,
-    )
-
 if STAGES.get("train", False):
     TARGETS.append(TRAINING.get("save_checkpoint", MODEL["checkpoint"]))
 
 if STAGES.get("inference", False):
     TARGETS += expand(
-        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_score.txt",
-        sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
-    )
-    TARGETS += expand(
         f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}.cov.txt",
-        sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
-    )
-
-if STAGES.get("accessibility_scores", False):
-    TARGETS += expand(
-        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_lwps.npy",
-        sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
-    )
-    TARGETS += expand(
-        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_ocf.npy",
-        sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
-    )
-    TARGETS += expand(
-        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_fdi.npz",
-        sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
-    )
-    TARGETS += expand(
-        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_ifs.npz",
-        sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
-    )
-    TARGETS += expand(
-        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_pfe.npz",
         sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
     )
 
