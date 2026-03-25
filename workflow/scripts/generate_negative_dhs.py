@@ -153,6 +153,7 @@ def generate_negative_dhs_df(
             all_sites = subtract_interval(all_sites, used_inaccessible_site)
 
     neg_df = pd.DataFrame(neg_rows, columns=['chr', 'start', 'end'])
+    neg_df = neg_df.sort_values(['chr', 'start']).reset_index(drop=True)
     return neg_df
 
 
