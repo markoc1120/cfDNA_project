@@ -9,25 +9,11 @@ DHS_FILES = [
     for f in glob.glob(f"{TRAIN_DHS_DIR}*.bed")
 ]
 
-rule train_sort_dhs:
+rule train_preprocess_dhs:
     input:
         dhs=f"{TRAIN_DHS_DIR}{{dhs_file}}.bed"
     output:
-        dhs_sorted=f"{TRAIN_SORTED_DHS_DIR}{{dhs_file}}_sorted.bed"
-    resources:
-        runtime=5,
-        mem_mb=200
-    group: "sort_dhs"
-    shell:
-        '''
-        sort -k1,1V -k2,2n {input.dhs} > {output.dhs_sorted}
-        '''
-
-rule train_preprocess_dhs:
-    input:
-        dhs_sorted=f"{TRAIN_SORTED_DHS_DIR}{{dhs_file}}_sorted.bed"
-    output:
-        dhs_sorted_preprocessed=f"{TRAIN_SORTED_DHS_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}.bed"
+        dhs_preprocessed=f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed"
     params:
         matrix_columns=MATRIX_COLUMNS
     resources:
@@ -39,9 +25,9 @@ rule train_preprocess_dhs:
 
 rule train_downsample_dhs:
     input:
-        dhs=expand(f"{TRAIN_SORTED_DHS_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}.bed", dhs_file=DHS_FILES)
+        dhs=expand(f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed", dhs_file=DHS_FILES)
     output:
-        downsampled_dhs=expand(f"{TRAIN_SORTED_DHS_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}_downsampled.bed", dhs_file=DHS_FILES)
+        downsampled_dhs=expand(f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed", dhs_file=DHS_FILES)
     resources:
         runtime=5,
         mem_mb=300
@@ -49,24 +35,10 @@ rule train_downsample_dhs:
     script:
         "../scripts/downsample_dhs.py"
 
-rule train_sort_fragments:
-    input:
-        fragment=f"{INPUT_FRAGS_DIR}{{sample}}.hg38.frag.gz"
-    output:
-        fragment_sorted=f"{SORTED_FRAGS_DIR}{{sample}}_sorted.hg38.frag.gz"
-    resources:
-        runtime=60,
-        mem_mb=200
-    group: "sort_frag"
-    shell:
-        '''
-        zcat {input.fragment} | sort -k1,1V -k2,2n | gzip -c > {output.fragment_sorted}
-        '''
-
 rule train_preprocess_fragments:
     input:
-        fragment=f"{SORTED_FRAGS_DIR}{{sample}}_sorted.hg38.frag.gz",
-        dhs=f"{TRAIN_SORTED_DHS_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}_downsampled.bed"
+        fragment=f"{INPUT_FRAGS_DIR}{{sample}}.hg38.frag.gz",
+        dhs=f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed"
     output:
         raw=f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
         cov=f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt"

@@ -9,8 +9,6 @@ NEGATIVE_DHS = config.get('negative_dhs', {})
 # preprocessing
 INPUT_FRAGS_DIR = DATA["input_frags_dir"]
 TRAIN_DHS_DIR = DATA["training_dhs_dir"]
-SORTED_FRAGS_DIR = DATA["sorted_frags_dir"]
-TRAIN_SORTED_DHS_DIR = DATA["training_sorted_dhs_dir"]
 TRAIN_OUTPUT_DIR = DATA["training_output_dir"]
 MIN_COV_FILE = DATA["training_min_coverage_file"]
 BIN_EDGES_FILE = DATA["training_bin_edges_file"]
@@ -20,9 +18,7 @@ MATRIX_SHIFT = MATRIX["shift"]
 
 # inference
 INFERENCE_DHS_DIR = DATA["inference_dhs_dir"]
-INFERENCE_SORTED_DHS_DIR = DATA["inference_sorted_dhs_dir"]
 INFERENCE_FRAGS_DIR = DATA["inference_frags_dir"]
-INFERENCE_SORTED_FRAGS_DIR = DATA["inference_sorted_frags_dir"]
 INFERENCE_OUTPUT_DIR = DATA["inference_output_dir"]
 INFERENCE_USE_REBINNED = MODEL.get("use_rebinned", True)
 

@@ -16,25 +16,11 @@ def inference_input(wildcards):
     return f"{INFERENCE_OUTPUT_DIR}{wildcards.sample}__{wildcards.dhs_file}_downsampled.npy"
 
 
-rule inference_sort_dhs:
+rule inference_preprocess_dhs:
     input:
         dhs=f"{INFERENCE_DHS_DIR}{{dhs_file}}.bed"
     output:
-        dhs_sorted=f"{INFERENCE_SORTED_DHS_DIR}{{dhs_file}}_sorted.bed"
-    resources:
-        runtime=5,
-        mem_mb=200
-    group: "sort_dhs"
-    shell:
-        """
-        sort -k1,1V -k2,2n {input.dhs} > {output.dhs_sorted}
-        """
-
-rule inference_preprocess_dhs:
-    input:
-        dhs_sorted=f"{INFERENCE_SORTED_DHS_DIR}{{dhs_file}}_sorted.bed"
-    output:
-        dhs_sorted_preprocessed=f"{INFERENCE_SORTED_DHS_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}.bed"
+        dhs_preprocessed=f"{INFERENCE_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed"
     params:
         matrix_columns=MATRIX_COLUMNS
     resources:
@@ -44,24 +30,10 @@ rule inference_preprocess_dhs:
     script:
         "../scripts/preprocess_dhs.py"
 
-rule inference_sort_fragments:
-    input:
-        fragment=f"{INFERENCE_FRAGS_DIR}{{sample}}.hg38.frag.gz"
-    output:
-        fragment_sorted=f"{INFERENCE_SORTED_FRAGS_DIR}{{sample}}_sorted.hg38.frag.gz"
-    resources:
-        runtime=600,
-        mem_mb=200
-    group: "sort_frag"
-    shell:
-        """
-        zcat {input.fragment} | sort -k1,1V -k2,2n | gzip -c > {output.fragment_sorted}
-        """
-
 rule inference_preprocess_fragments:
     input:
-        fragment=f"{INFERENCE_SORTED_FRAGS_DIR}{{sample}}_sorted.hg38.frag.gz",
-        dhs=f"{INFERENCE_SORTED_DHS_DIR}{{dhs_file}}_sorted_wl{MATRIX_COLUMNS}.bed"
+        fragment=f"{INFERENCE_FRAGS_DIR}{{sample}}.hg38.frag.gz",
+        dhs=f"{INFERENCE_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed"
     output:
         raw=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
         cov=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt"
