@@ -43,6 +43,10 @@ if STAGES.get("inference", False):
         f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_score.txt",
         sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
     )
+    TARGETS += expand(
+        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}.cov.txt",
+        sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
+    )
 
 if STAGES.get("accessibility_scores", False):
     TARGETS += expand(

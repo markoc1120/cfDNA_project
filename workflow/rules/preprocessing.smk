@@ -7,6 +7,7 @@ SAMPLES = [
 DHS_FILES = [
     f.split('/')[-1].replace('.bed', '')
     for f in glob.glob(f"{TRAIN_DHS_DIR}*.bed")
+    if '_wl' not in f.split('/')[-1]
 ]
 
 rule train_preprocess_dhs:

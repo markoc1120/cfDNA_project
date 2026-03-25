@@ -7,6 +7,7 @@ INFERENCE_SAMPLES = [
 INFERENCE_DHS_FILES = [
     f.split('/')[-1].replace('.bed', '')
     for f in glob.glob(f"{INFERENCE_DHS_DIR}*.bed")
+    if '_wl' not in f.split('/')[-1]
 ]
 
 
@@ -60,6 +61,18 @@ rule inference_downsample_matrices:
     group: "downsample_matrices"
     script:
         "../scripts/downsample_matrices.py"
+
+rule calculate_coverage_after_downsample_matrices:
+    input:
+        f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"
+    output:
+        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}.cov.txt"
+    resources:
+        runtime=10,
+        mem_mb=20
+    group: "downsample_matrices"
+    script:
+        "../scripts/calculate_coverage.py"
 
 rule inference_rebin_matrices:
     input:
