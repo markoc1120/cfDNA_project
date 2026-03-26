@@ -112,7 +112,7 @@ ifs:
   matrix_shift: 250
 
 pfe:
-  window_size: 2000
+  window_size: 1500
   min_length: 100
   max_length: 300
   matrix_shift: 250
