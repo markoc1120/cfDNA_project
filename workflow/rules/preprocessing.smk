@@ -31,7 +31,7 @@ rule train_downsample_dhs:
         downsampled_dhs=temp(expand(f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed", dhs_file=DHS_FILES))
     resources:
         runtime=5,
-        mem_mb=300
+        mem_mb=1000
     group: "downsample_dhs"
     script:
         "../scripts/downsample_dhs.py"

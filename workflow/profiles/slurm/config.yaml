@@ -15,3 +15,8 @@ group-components:
   downsample_matrices: 50
   rebin_matrices: 50
   inference: 50
+  pfe: 50
+  ocf: 50
+  ifs: 50
+  fdi: 50
+  lwps: 50
