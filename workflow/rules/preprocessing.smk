@@ -70,7 +70,7 @@ rule train_downsample_matrices:
         raw=f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
         mincov=MIN_COV_FILE
     output:
-        temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy")
+        f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"
     resources:
         runtime=10,
         mem_mb=150
@@ -97,7 +97,7 @@ rule rebin_matrices:
         matrix = f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
         bin_edges = BIN_EDGES_FILE
     output:
-        temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy")
+        f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy"
     resources:
         runtime=10,
         mem_mb=150

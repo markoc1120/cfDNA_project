@@ -31,6 +31,14 @@ if STAGES.get("generate_negatives", False):
 
 if STAGES.get("train", False):
     TARGETS.append(TRAINING.get("save_checkpoint", MODEL["checkpoint"]))
+    TARGETS += expand(
+        f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
+        sample=SAMPLES, dhs_file=DHS_FILES,
+    )
+    TARGETS += expand(
+        f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy",
+        sample=SAMPLES, dhs_file=DHS_FILES,
+    )
 
 if STAGES.get("inference", False):
     TARGETS += expand(

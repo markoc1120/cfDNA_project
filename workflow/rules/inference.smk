@@ -90,8 +90,6 @@ rule inference_rebin_matrices:
 rule run_inference:
     input:
         matrix=inference_input,
-        cov=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt",
-        min_cov=MIN_COV_FILE,
         checkpoint=MODEL["checkpoint"],
     output:
         score=temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_score.txt")
