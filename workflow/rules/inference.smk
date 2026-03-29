@@ -57,7 +57,7 @@ rule inference_downsample_matrices:
         temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy")
     resources:
         runtime=10,
-        mem_mb=150
+        mem_mb=300
     group: "downsample_matrices"
     script:
         "../scripts/downsample_matrices.py"
@@ -97,8 +97,8 @@ rule run_inference:
         checkpoint=MODEL["checkpoint"],
         model_type=MODEL["name"],
     resources:
-        runtime=10,
-        mem_mb=50
+        runtime=20,
+        mem_mb=100
     group: "inference"
     script:
         "../scripts/run_inference.py"
