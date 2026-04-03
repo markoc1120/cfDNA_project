@@ -96,7 +96,7 @@ rule run_inference:
         model_type=MODEL["name"],
     resources:
         runtime=20,
-        mem_mb=100
+        mem_mb=300
     group: "inference"
     script:
         "../scripts/run_inference.py"
