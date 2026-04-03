@@ -36,9 +36,6 @@ if 'snakemake' in globals():
     needs_standardization = any(t['name'] == 'standardization' for t in transform_configs)
     transform_fn = build_transform_pipeline(transform_configs) if transform_configs else None
 
-    # determine suffix based on model config
-    suffix = 'rebinned' if model_cfg.get('use_rebinned', True) else 'downsampled'
-
     # get dataloaders
     train_loader, valid_loader, test_loader = get_dataloaders(
         output_dir=data_cfg['training_output_dir'],
@@ -48,13 +45,13 @@ if 'snakemake' in globals():
         valid_size=training_cfg.get('valid_size', 10),
         batch_size=training_cfg.get('batch_size', 32),
         seed=seed,
-        suffix=suffix,
+        suffix=snakemake.params.input_type,
     )
 
     # build model
     model_params = model_cfg.get('params', {})
     # determine n_inputs from a sample batch (MLP)
-    if model_cfg['name'] == 'mlp_model':
+    if model_cfg['name'] == 'mlp':
         sample_x, _ = next(iter(train_loader))
         n_inputs = sample_x.shape[2] + sample_x.shape[3]
         model = get_model(model_cfg['name'], n_inputs=n_inputs, **model_params)
@@ -78,7 +75,7 @@ if 'snakemake' in globals():
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, **scheduler_params)
 
     # train
-    checkpoint_path = training_cfg.get('save_checkpoint', model_cfg['checkpoint'])
+    checkpoint_path = model_cfg['checkpoint']
     history = train(
         model,
         optimizer,

@@ -2,8 +2,8 @@ from .cnn_model import RebinnedCNNModel
 from .mlp_model import MLPMultipleInputsModel
 
 MODEL_REGISTRY = {
-    'cnn_model': RebinnedCNNModel,
-    'mlp_model': MLPMultipleInputsModel,
+    'cnn': RebinnedCNNModel,
+    'mlp': MLPMultipleInputsModel,
 }
 
 

@@ -12,9 +12,7 @@ INFERENCE_DHS_FILES = [
 
 
 def inference_input(wildcards):
-    if INFERENCE_USE_REBINNED:
-        return f"{INFERENCE_OUTPUT_DIR}{wildcards.sample}__{wildcards.dhs_file}_rebinned.npy"
-    return f"{INFERENCE_OUTPUT_DIR}{wildcards.sample}__{wildcards.dhs_file}_downsampled.npy"
+    return f"{INFERENCE_OUTPUT_DIR}{wildcards.sample}__{wildcards.dhs_file}_{INPUT_TYPE}.npy"
 
 
 rule inference_preprocess_dhs:

@@ -68,7 +68,7 @@ def load_vectors(stat_name, input_files, metadata_map):
     all_vectors = np.vstack([e['vector'] for e in entries])
 
     loadings_df = None
-    if stat_name not in ('pfe', 'cnn_score'):
+    if stat_name in ('lwps', 'ocf', 'fdi', 'ifs'):
         pca = PCA(n_components=2)
         pc_values = pca.fit_transform(all_vectors)
         expl_var = pca.explained_variance_ratio_
@@ -98,17 +98,24 @@ if 'snakemake' in globals():
     metadata_path = cfg['data']['metadata_path']
     paper = cfg['data']['paper']
     final_dir = cfg['data']['final_matrices_dir']
+    model = cfg['model']['name']
 
     os.makedirs(final_dir, exist_ok=True)
     metadata_map = parse_metadata(metadata_path, paper)
 
+    input_map = {
+        'lwps': 'lwps_inputs',
+        'ocf': 'ocf_inputs',
+        'fdi': 'fdi_inputs',
+        'ifs': 'ifs_inputs',
+        'pfe': 'pfe_inputs',
+        model: 'model_inputs',
+    }
+
     stat_inputs = {
-        'lwps': snakemake.input.lwps_inputs,
-        'ocf': snakemake.input.ocf_inputs,
-        'fdi': snakemake.input.fdi_inputs,
-        'ifs': snakemake.input.ifs_inputs,
-        'pfe': snakemake.input.pfe_inputs,
-        'cnn_score': snakemake.input.cnn_inputs,
+        stat: getattr(snakemake.input, attr)
+        for stat, attr in input_map.items()
+        if hasattr(snakemake.input, attr)
     }
 
     for stat_name, input_files in stat_inputs.items():

@@ -22,9 +22,16 @@ INFERENCE_FRAGS_DIR = DATA["inference_frags_dir"]
 INFERENCE_OUTPUT_DIR = DATA["inference_output_dir"]
 INFERENCE_USE_REBINNED = MODEL.get("use_rebinned", True)
 
+INPUT_TYPE = 'rebinned' if INFERENCE_USE_REBINNED else 'downsampled'
+
 # accessibility score
 ACCESSIBILITY_DIR = DATA["accessibility_scores_dir"]
 
 # benchmark
 FINAL_MATRICES_DIR = DATA["final_matrices_dir"]
-BENCH_STATS = ['pfe', 'lwps', 'ifs', 'fdi', 'ocf', 'cnn_score']
+
+ACCESSIBILITY_STATS = ['pfe', 'lwps', 'ifs', 'fdi', 'ocf']
+BENCH_STATS = [MODEL['name']]
+
+if STAGES.get('accessibility_scores', False):
+    BENCH_STATS.extend(ACCESSIBILITY_STATS)

@@ -1,10 +1,7 @@
 # Stages to run (toggle on/off)
 stages:
   generate_negatives: true
-  collect_data: true
-  train: true
-  inference: true
-  accessibility_scores: true
+  accessibility_scores: false
   benchmark: true
 
 
@@ -46,8 +43,8 @@ negative_dhs:
 
 # Model (swap by changing name + checkpoint)
 model:
-  name: "cnn_model"
-  checkpoint: "models/cnn_rebinned_46x2000.pt"
+  name: "cnn"
+  checkpoint: "models/cnn_50x2000.pt"
   use_rebinned: true
   params: {}
 
@@ -89,7 +86,6 @@ training:
     mode: "max"
     patience: 3
     factor: 0.1
-  save_checkpoint: "models/cnn_rebinned_46x2000.pt"
 
 
 # Accessibility score parameters

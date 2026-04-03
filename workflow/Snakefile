@@ -14,6 +14,8 @@ Usage:
 include: "rules/common.smk"
 
 # include rule files
+if STAGES.get('generate_negatives', False):
+    include: "rules/generate_negative_dhs.smk"
 include: "rules/preprocessing.smk"
 include: "rules/training.smk"
 include: "rules/inference.smk"
@@ -30,7 +32,7 @@ if STAGES.get("generate_negatives", False):
     TARGETS.append(f"{TRAIN_DHS_DIR}.negatives_done")
 
 if STAGES.get("train", False):
-    TARGETS.append(TRAINING.get("save_checkpoint", MODEL["checkpoint"]))
+    TARGETS.append(MODEL["checkpoint"])
     TARGETS += expand(
         f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
         sample=SAMPLES, dhs_file=DHS_FILES,
