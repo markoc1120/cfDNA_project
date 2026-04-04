@@ -29,6 +29,7 @@ default:
 import 'tasks/check.just'
 import 'tasks/clean.just'
 import 'tasks/clean-all.just'
+import 'tasks/clean-output.just'
 import 'tasks/gen-test.just'
 import 'tasks/commit.just'
 import 'tasks/doc.just'
