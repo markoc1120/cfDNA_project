@@ -6,7 +6,7 @@ import torchmetrics
 
 from cfdna.models import get_model
 from cfdna.preprocessing.transforms import build_transform_pipeline
-from cfdna.training.trainer import train
+from cfdna.training.trainer import train, compute_best_roc_data
 from cfdna.training.utils import get_dataloaders
 
 logger = logging.getLogger(__name__)
@@ -90,3 +90,18 @@ if 'snakemake' in globals():
         device=device,
     )
     logger.info(f'Training complete. Best checkpoint saved to: {checkpoint_path}')
+
+    roc_metric = torchmetrics.classification.BinaryROC().to(device)
+    roc_data = compute_best_roc_data(
+        model=model,
+        valid_loader=valid_loader,
+        roc_metric=roc_metric,
+        device=device,
+    )
+    training_history = {
+        **history,
+        **roc_data,
+    }
+    history_path = model_cfg['checkpoint'].replace('.pt', '.history.pt')
+    torch.save(training_history, history_path)
+    logger.info(f'Training history + ROC data saved to: {history_path}')

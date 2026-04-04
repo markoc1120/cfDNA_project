@@ -3,23 +3,23 @@ accessibility_inputs = {}
 if STAGES.get("accessibility_scores", False):
     accessibility_inputs = dict(
         lwps_inputs=expand(
-            f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{INPUT_TYPE}_lwps.npy",
+            f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_lwps.npy",
             sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
         ),
         ocf_inputs=expand(
-            f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{INPUT_TYPE}_ocf.npy",
+            f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_ocf.npy",
             sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
         ),
         fdi_inputs=expand(
-            f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{INPUT_TYPE}_fdi.npz",
+            f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_fdi.npz",
             sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
         ),
         ifs_inputs=expand(
-            f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{INPUT_TYPE}_ifs.npz",
+            f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_ifs.npz",
             sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
         ),
         pfe_inputs=expand(
-            f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{INPUT_TYPE}_pfe.npz",
+            f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_downsampled_pfe.npz",
             sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
         ),
     )

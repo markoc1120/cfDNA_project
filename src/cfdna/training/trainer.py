@@ -2,6 +2,7 @@ import time
 
 import torch
 import torchmetrics
+import matplotlib.pyplot as plt
 
 
 def evaluate_tm(model, data_loader, metric, device='cpu'):
@@ -99,3 +100,35 @@ def compute_best_roc_data(model, valid_loader, roc_metric, device='cpu'):
         'tpr': tpr,
         'thresholds': thr,
     }
+
+
+def plot_training_progress(h):
+    already_roc = False
+    for plot in ('train_losses', 'valid_metrics', 'roc'):
+        plt.figure(figsize=(8, 4))
+        for history, opt_name in zip((h.values()), h.keys()):
+            if plot == 'roc':
+                plt.plot(history['fpr'], history['tpr'], label=opt_name, linewidth=1)
+                if not already_roc:
+                    plt.plot(
+                        [0, 1], [0, 1], linestyle='--', linewidth=1, color='r', label='Random guess'
+                    )
+                    already_roc = True
+            else:
+                plt.plot(history[plot], label=opt_name, linewidth=1)
+
+        plt.grid()
+        plt.xlabel(
+            {'train_losses': 'Epochs', 'valid_metrics': 'Epochs', 'roc': 'False positive rate'}[
+                plot
+            ]
+        )
+        plt.ylabel(
+            {
+                'train_losses': 'Training loss',
+                'valid_metrics': 'Validation AUC',
+                'roc': 'True positive rate',
+            }[plot]
+        )
+        plt.legend(loc='best')
+        plt.show()
