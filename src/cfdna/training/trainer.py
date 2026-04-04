@@ -1,8 +1,8 @@
 import time
 
+import matplotlib.pyplot as plt
 import torch
 import torchmetrics
-import matplotlib.pyplot as plt
 
 
 def evaluate_tm(model, data_loader, metric, device='cpu'):

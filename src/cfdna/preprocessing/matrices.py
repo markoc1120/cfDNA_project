@@ -18,14 +18,18 @@ def downsample_matrix(matrix: np.ndarray, target_sum: int) -> np.ndarray:
 
 
 def rebin_matrix(matrix: np.ndarray, bin_edges: np.ndarray) -> np.ndarray:
+    # row wise binning
     n_bins = len(bin_edges) - 1
-    rebinned = np.zeros((n_bins, matrix.shape[1]), dtype=np.float32)
+    rebinned_rows = np.zeros((n_bins, matrix.shape[1]), dtype=np.float32)
     for i in range(n_bins):
         low = int(np.ceil(bin_edges[i]))
         high = int(np.ceil(bin_edges[i + 1]))
         high = min(high, matrix.shape[0])
         if low < high:
-            rebinned[i] = matrix[low:high, :].sum(axis=0)
+            rebinned_rows[i] = matrix[low:high, :].sum(axis=0)
+
+    # column wise binning
+    rebinned = rebinned_rows.reshape(rebinned_rows.shape[0], -1, 10).sum(axis=2)
     return rebinned
 
 

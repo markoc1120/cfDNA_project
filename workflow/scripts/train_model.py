@@ -6,7 +6,7 @@ import torchmetrics
 
 from cfdna.models import get_model
 from cfdna.preprocessing.transforms import build_transform_pipeline
-from cfdna.training.trainer import train, compute_best_roc_data
+from cfdna.training.trainer import compute_best_roc_data, train
 from cfdna.training.utils import get_dataloaders
 
 logger = logging.getLogger(__name__)
