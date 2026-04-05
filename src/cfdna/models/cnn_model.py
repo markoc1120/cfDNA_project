@@ -2,8 +2,6 @@ from functools import partial
 
 import torch.nn as nn
 
-# RebinnedCNNModel — designed for 46×2000 input
-
 
 class RebinnedCNNUnit(nn.Module):
     def __init__(self, in_channels, out_channels, pool_ks=(2, 4)):

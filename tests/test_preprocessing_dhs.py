@@ -14,13 +14,13 @@ def run_preprocessor(tmp_path, input_text, matrix_columns=2500):
 @pytest.mark.parametrize(
     'input_text, matrix_columns, expected_lines',
     [
-        # Non-overlapping: midpoints 1500, 5500, 9500 — all pass
+        # Non-overlapping: midpoints 1500, 5500, 9500 - all pass
         ('chr1\t1000\t2000\nchr1\t5000\t6000\nchr1\t9000\t10000\n', 2500, 3),
-        # Overlapping: midpoints 1500, 2500 — distance 1000 <= 2500
+        # Overlapping: midpoints 1500, 2500 - distance 1000 <= 2500
         ('chr1\t1000\t2000\nchr1\t2000\t3000\n', 2500, 1),
-        # Same sites but small window — both pass
+        # Same sites but small window - both pass
         ('chr1\t1000\t2000\nchr1\t2000\t3000\n', 500, 2),
-        # Different chromosomes — overlap resets
+        # Different chromosomes - overlap resets
         ('chr1\t1000\t2000\nchr2\t1000\t2000\n', 2500, 2),
         # Empty input
         ('', 2500, 0),

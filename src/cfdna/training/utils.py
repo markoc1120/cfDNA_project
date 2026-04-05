@@ -10,6 +10,18 @@ from .dataset import MatrixDataset, build_pairs, split_pairs_torch
 logger = logging.getLogger(__name__)
 
 
+class SelfTargetLoader:
+    def __init__(self, loader):
+        self._loader = loader
+
+    def __iter__(self):
+        for x_batch, _label in self._loader:
+            yield x_batch, x_batch
+
+    def __len__(self):
+        return len(self._loader)
+
+
 def load_train_pairs(pairs, transform_fn=None):
     matrixes = []
     for p in pairs:

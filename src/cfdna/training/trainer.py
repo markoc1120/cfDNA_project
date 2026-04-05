@@ -2,7 +2,24 @@ import time
 
 import matplotlib.pyplot as plt
 import torch
+import torch.nn.functional as F
 import torchmetrics
+
+
+class NegReconMSE(torchmetrics.Metric):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.add_state('sum_mse', default=torch.tensor(0.0), dist_reduce_fx='sum')
+        self.add_state('count', default=torch.tensor(0), dist_reduce_fx='sum')
+
+    def update(self, y_pred, target):
+        recon = y_pred.reconstruction if hasattr(y_pred, 'reconstruction') else y_pred
+        mse = F.mse_loss(recon, target, reduction='mean')
+        self.sum_mse += mse
+        self.count += 1
+
+    def compute(self):
+        return -(self.sum_mse / self.count)
 
 
 def evaluate_tm(model, data_loader, metric, device='cpu'):

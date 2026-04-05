@@ -7,9 +7,9 @@ def preprocessor(make_preprocessor):
     return make_preprocessor(
         dhs_text='chr1\t4900\t5100\n',
         frag_lines=[
-            'chr1\t4925\t5075\t60\t+\n',  # midpoint 5000, length 150 — in window
-            'chr1\t4450\t4550\t60\t+\n',  # midpoint 4500, length 100 — in window
-            'chr1\t100\t250\t60\t+\n',  # midpoint 175 — outside window
+            'chr1\t4925\t5075\t60\t+\n',  # midpoint 5000, length 150 - in window
+            'chr1\t4450\t4550\t60\t+\n',  # midpoint 4500, length 100 - in window
+            'chr1\t100\t250\t60\t+\n',  # midpoint 175 - outside window
         ],
     )
 

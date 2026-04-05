@@ -1,9 +1,11 @@
 from .cnn_model import RebinnedCNNModel
 from .mlp_model import MLPMultipleInputsModel
+from .vae import VAEModel
 
 MODEL_REGISTRY = {
     'cnn': RebinnedCNNModel,
     'mlp': MLPMultipleInputsModel,
+    'vae': VAEModel,
 }
 
 
