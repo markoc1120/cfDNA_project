@@ -32,7 +32,7 @@ def build_pairs(matrix_dir: str, suffix: str = 'downsampled', only_positive: boo
         sid = sid_result[0]
 
         is_neg = 'negative' in p.lower()
-        if is_neg and not only_positive:
+        if is_neg and only_positive:
             continue
         elif is_neg:
             mapping[sid]['negative'] = p
