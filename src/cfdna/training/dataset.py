@@ -10,16 +10,20 @@ from torch.utils.data import Dataset, random_split
 SID_PATTERN = r'EE\d+'
 
 
-def build_pairs(matrix_dir: str, suffix: str = 'downsampled'):
+def build_pairs(matrix_dir: str, suffix: str = 'downsampled', only_positive: bool = False):
     """
     Returns list of dicts:
     [{'sid': sid, 'positive': path, 'neg': path}, ...]
     """
     npy_files = glob.glob(f'{matrix_dir}*_{suffix}.npy')
 
-    mapping: DefaultDict[str, dict[str, str]] = defaultdict(
-        lambda: {'negative': '', 'positive': ''}
-    )
+    if only_positive:
+        mapping: DefaultDict[str, dict[str, str]] = defaultdict(lambda: {'positive': ''})
+    else:
+        mapping: DefaultDict[str, dict[str, str]] = defaultdict(
+            lambda: {'positive': '', 'negative': ''}
+        )
+
     for p in npy_files:
         sid_result = re.search(SID_PATTERN, p)
         if not sid_result:
@@ -28,14 +32,19 @@ def build_pairs(matrix_dir: str, suffix: str = 'downsampled'):
         sid = sid_result[0]
 
         is_neg = 'negative' in p.lower()
-        if is_neg:
+        if is_neg and not only_positive:
+            continue
+        elif is_neg:
             mapping[sid]['negative'] = p
         else:
             mapping[sid]['positive'] = p
 
     result = []
     for sid, paths in mapping.items():
-        result.append({'sid': sid, 'positive': paths['positive'], 'negative': paths['negative']})
+        entry = {'sid': sid, 'positive': paths['positive']}
+        if not only_positive:
+            entry.update({'negative': paths['negative']})
+        result.append(entry)
     return result
 
 
@@ -62,7 +71,8 @@ class MatrixDataset(Dataset):
         self.items = []
         for p in pairs:
             self.items.append((p['positive'], 1, p['sid']))
-            self.items.append((p['negative'], 0, p['sid']))
+            if 'negative' in p:
+                self.items.append((p['negative'], 0, p['sid']))
 
         self.train_mean = train_mean
         self.train_std = train_std

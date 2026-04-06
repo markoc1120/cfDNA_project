@@ -25,7 +25,10 @@ class SelfTargetLoader:
 def load_train_pairs(pairs, transform_fn=None):
     matrixes = []
     for p in pairs:
-        for path in (p['positive'], p['negative']):
+        paths = [p['positive']]
+        if 'negative' in p:
+            paths.append(p['negative'])
+        for path in paths:
             x = torch.from_numpy(np.load(path).astype(np.float32))
 
             if transform_fn is not None:
@@ -44,8 +47,9 @@ def get_dataloaders(
     seed: int = 42,
     suffix: str = 'downsampled',
     is_tiny: bool = False,
+    only_positive: bool = False,
 ):
-    pairs = build_pairs(output_dir, suffix=suffix)
+    pairs = build_pairs(output_dir, suffix=suffix, only_positive=only_positive)
     train_pairs, valid_pairs, test_pairs = split_pairs_torch(
         pairs, train_size=train_size, valid_size=valid_size, seed=seed
     )

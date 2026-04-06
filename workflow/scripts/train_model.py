@@ -36,6 +36,7 @@ if 'snakemake' in globals():
     needs_standardization = any(t['name'] == 'standardization' for t in transform_configs)
     transform_fn = build_transform_pipeline(transform_configs) if transform_configs else None
 
+    model_name = model_cfg['name']
     # get dataloaders
     train_loader, valid_loader, test_loader = get_dataloaders(
         output_dir=data_cfg['training_output_dir'],
@@ -46,12 +47,12 @@ if 'snakemake' in globals():
         batch_size=training_cfg.get('batch_size', 32),
         seed=seed,
         suffix=snakemake.params.input_type,
+        only_positive=(model_name == 'vae'),
     )
 
     # build model
     model_params = model_cfg.get('params', {})
     # determine n_inputs from a sample batch (MLP)
-    model_name = model_cfg['name']
     if model_name == 'mlp':
         sample_x, _ = next(iter(train_loader))
         n_inputs = sample_x.shape[2] + sample_x.shape[3]
