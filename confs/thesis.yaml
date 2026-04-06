@@ -1,0 +1,119 @@
+# Stages to run (toggle on/off)
+stages:
+  generate_negatives: true
+  accessibility_scores: true
+  benchmark: true
+
+
+# Data paths
+data:
+  # Input data should be created in the below folders:
+  input_frags_dir: "raw_data/training_frags/"
+  inference_frags_dir: "raw_data/inference_frags/"
+  training_dhs_dir: "raw_data/training_dhs/"
+  inference_dhs_dir: "raw_data/inference_dhs/"
+  hg_38_2bit_file: "raw_data/hg38.2bit"
+  metadata_path: "raw_data/meta_data.csv"
+  paper: "Genome-wide cell-free DNA fragmentation in patients with cancer"
+
+  # The below folders are automatically generated:
+  training_output_dir: "data/training_frags/"
+  training_min_coverage_file: "data/training_frags/min_coverage.txt"
+  training_bin_edges_file: "data/training_frags/bin_edges.npy"
+
+  inference_output_dir: "data/inference/"
+
+  accessibility_scores_dir: "data/accessibility_scores/"
+  final_matrices_dir: "data/final_matrices/"
+
+
+# Matrix
+matrix:
+  columns: 2500
+  rows: 300
+  shift: 250
+  n_rebin_rows: 50
+
+
+# Negative DHS generation
+negative_dhs:
+  gc_bias_window: 200
+  n_quantile_bins: 20
+  max_tries_multiplier: 50
+
+# Model (swap by changing name + checkpoint)
+model:
+  name: "mlp"
+  checkpoint: "models/mlp_300x2000.pt"
+  use_rebinned: false
+  params: {}
+
+
+# Preprocessing transforms (applied in order)
+# options: "sum_normalization", "log_transform", "standardization", "slice"
+preprocessing:
+  transforms: []
+  # # example 1: sum normalize
+  # transforms:
+  #   - name: "sum_normalization"
+
+  # # example 2: slice + sum normalize + log
+  # transforms:
+  #   - name: "slice"
+  #     params: {ymin: 130, ymax: 200, xmin: 600, xmax: 1400}
+  #   - name: "sum_normalization"
+  #   - name: "log_transform"
+
+  # # example 3: sum normalize + log_transform + standardization
+  # transforms:
+  #   - name: "sum_normalization"
+  #   - name: "log_transform"
+  #   - name: "standardization"
+
+
+# Training hyperparameters
+training:
+  seed: 42
+  train_size: 80
+  valid_size: 10
+  batch_size: 32
+  n_epochs: 20
+  patience: 10
+  optimizer: "adam"
+  learning_rate: 0.001
+  scheduler: "reduce_on_plateau"
+  scheduler_params:
+    mode: "max"
+    patience: 3
+    factor: 0.1
+
+
+# Accessibility score parameters
+lwps:
+  window_size: 120
+  lower_threshold: 120
+  upper_threshold: 180
+  matrix_shift: 250
+
+fdi:
+  window_size: 250
+  step_size: 20
+  endpoint_window: 10
+  x: 0.9
+  y: 500
+  matrix_shift: 250
+
+ifs:
+  window_size: 125
+  matrix_shift: 250
+
+pfe:
+  window_size: 1500
+  min_length: 100
+  max_length: 300
+  matrix_shift: 250
+
+ocf:
+  window_half: 10
+  center_offset: 60
+  matrix_shift: 250

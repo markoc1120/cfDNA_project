@@ -1,0 +1,58 @@
+"""
+Usage:
+    # local
+    uv run just local-run
+
+    # SLURM
+    uv run just slurm-run
+
+    # dry run
+    uv run just dry-run
+"""
+
+# shared config
+include: "rules/common.smk"
+
+# include rule files
+if STAGES.get('generate_negatives', False):
+    include: "rules/generate_negative_dhs.smk"
+include: "rules/preprocessing.smk"
+include: "rules/training.smk"
+include: "rules/inference.smk"
+if STAGES.get("accessibility_scores", False):
+    include: "rules/accessibility_scores.smk"
+if STAGES.get("benchmark", False):
+    include: "rules/benchmark.smk"
+
+
+# build final targets
+TARGETS = []
+
+if STAGES.get("generate_negatives", False):
+    TARGETS.append(f"{TRAIN_DHS_DIR}.negatives_done")
+
+# training
+TARGETS.append(MODEL["checkpoint"])
+TARGETS += expand(
+    f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
+    sample=SAMPLES, dhs_file=DHS_FILES,
+)
+TARGETS += expand(
+    f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy",
+    sample=SAMPLES, dhs_file=DHS_FILES,
+)
+
+# inference
+TARGETS += expand(
+    f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}.cov.txt",
+    sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
+)
+
+if STAGES.get("benchmark", False):
+    TARGETS += expand(
+        f"{FINAL_MATRICES_DIR}feature_matrix_{{stat}}.parquet",
+        stat=BENCH_STATS,
+    )
+
+rule all:
+    input: TARGETS

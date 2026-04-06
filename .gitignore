@@ -1,15 +1,36 @@
+# https://git-scm.com/docs/gitignore
+
 data/
 raw_data/
-__pycache__/
-scripts/ipynbs/
+*.pt
 
 .snakemake*
 .python-version
 
+# Build
+/dist/
+/build/
 
-.idea
+# Cache
+.cache/
+.coverage*
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
 
-.pytest*
-.cache
-.mypy_cache
-.ipynb*
+# Editor
+/.idea/
+/.vscode/
+.ipynb_checkpoints/
+
+# Environs
+.env
+/.venv/
+
+# Project
+/docs/*
+!**/.gitkeep
+
+# Python
+*.py[cod]
+__pycache__/
