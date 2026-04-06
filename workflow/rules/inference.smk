@@ -79,7 +79,7 @@ rule inference_rebin_matrices:
     output:
         temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy")
     resources:
-        runtime=5,
+        runtime=20,
         mem_mb=150
     group: "rebin_matrices"
     script:
