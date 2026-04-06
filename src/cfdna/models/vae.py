@@ -73,7 +73,7 @@ class VAEModel(nn.Module):
         self.encoder = nn.Sequential(
             EncoderBlock(1, C, pool_ks=(2, 4)),
             EncoderBlock(C, C * 2, pool_ks=(2, 4)),
-            EncoderBlock(C * 2, C * 4, pool_ks=(1, 5)),
+            EncoderBlock(C * 2, C * 4, pool_ks=(2, 2)),
         )
 
         # discover encoded spatial shape
@@ -90,7 +90,7 @@ class VAEModel(nn.Module):
         # decode
         self.fc_decode = nn.Linear(latent_dim, flat_dim)
         self.decoder = nn.Sequential(
-            DecoderBlock(C * 4, C * 2, stride=(1, 5)),
+            DecoderBlock(C * 4, C * 2, stride=(2, 2), output_padding=(1, 0)),
             DecoderBlock(C * 2, C, stride=(2, 4)),
             nn.ConvTranspose2d(
                 C,
