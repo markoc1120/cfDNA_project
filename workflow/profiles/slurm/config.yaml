@@ -1,5 +1,6 @@
 executor: slurm
 jobs: 20
+cores: 10
 use-conda: true
 default-resources:
   slurm_account: Fragmentomics
@@ -7,10 +8,8 @@ default-resources:
   mem_mb: 500
   disk_mb: 1000
 group-components:
-  sort_dhs: 50
   prep_dhs: 50
   downsample_dhs: 50
-  sort_frag: 50
   prep_frag: 50
   downsample_matrices: 50
   rebin_matrices: 50
