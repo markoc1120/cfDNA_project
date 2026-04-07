@@ -77,7 +77,7 @@ rule inference_rebin_matrices:
         matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
         bin_edges=BIN_EDGES_FILE
     output:
-        temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy")
+        f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy"
     resources:
         runtime=20,
         mem_mb=150

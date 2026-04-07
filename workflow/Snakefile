@@ -48,6 +48,11 @@ TARGETS += expand(
     sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
 )
 
+TARGETS += expand(
+    f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy",
+    sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
+)
+
 if STAGES.get("benchmark", False):
     TARGETS += expand(
         f"{FINAL_MATRICES_DIR}feature_matrix_{{stat}}.parquet",
