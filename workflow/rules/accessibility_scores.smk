@@ -9,7 +9,7 @@ rule calculate_lwps:
         statistic="lwps"
     resources:
         mem_mb=100,
-        runtime=30
+        runtime=10
     group: "lwps"
     script:
         "../scripts/calculate_statistics.py"
@@ -25,7 +25,7 @@ rule calculate_fdi:
         statistic="fdi"
     resources:
         mem_mb=300,
-        runtime=30
+        runtime=10
     group: "fdi"
     script:
         "../scripts/calculate_statistics.py"
@@ -41,7 +41,7 @@ rule calculate_ifs:
         statistic="ifs"
     resources:
         mem_mb=60,
-        runtime=30
+        runtime=10
     group: "ifs"
     script:
         "../scripts/calculate_statistics.py"
@@ -57,7 +57,7 @@ rule calculate_pfe:
         statistic="pfe"
     resources:
         mem_mb=100,
-        runtime=30
+        runtime=10
     group: "pfe"
     script:
         "../scripts/calculate_statistics.py"
@@ -73,7 +73,7 @@ rule calculate_ocf:
         statistic="ocf"
     resources:
         mem_mb=160,
-        runtime=30
+        runtime=10
     group: "ocf"
     script:
         "../scripts/calculate_statistics.py"
