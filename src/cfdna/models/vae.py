@@ -61,8 +61,8 @@ class VAEModel(nn.Module):
         self,
         latent_dim: int = 64,
         base_channels: int = 32,
-        input_height: int = 50,
-        input_width: int = 200,
+        input_height: int = 48,
+        input_width: int = 192,
     ):
         super().__init__()
         C = base_channels
@@ -90,8 +90,8 @@ class VAEModel(nn.Module):
         # decode
         self.fc_decode = nn.Linear(latent_dim, flat_dim)
         self.decoder = nn.Sequential(
-            DecoderBlock(C * 4, C * 2, stride=(2, 2), output_padding=(1, 0)),
-            DecoderBlock(C * 2, C, stride=(2, 4)),
+            DecoderBlock(C * 4, C * 2, stride=(2, 2), output_padding=(1, 1)),
+            DecoderBlock(C * 2, C, stride=(2, 4), output_padding=(1, 3)),
             nn.ConvTranspose2d(
                 C,
                 1,
@@ -117,12 +117,7 @@ class VAEModel(nn.Module):
     def decode(self, z: Tensor) -> Tensor:
         h = self.fc_decode(z)
         h = h.view(-1, *self._encoded_shape)
-        h = self.decoder(h)
-        # interpolate to exact input dims if ConvTranspose doesn't land exactly
-        target_size = (self._input_height, self._input_width)
-        if h.shape[2:] != target_size:
-            h = F.interpolate(h, size=target_size, mode='bilinear', align_corners=False)
-        return h
+        return self.decoder(h)
 
     def forward(self, x: Tensor) -> VAEOutput:
         mu, logvar = self.encode(x)

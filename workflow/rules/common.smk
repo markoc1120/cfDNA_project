@@ -21,6 +21,7 @@ INFERENCE_DHS_DIR = DATA["inference_dhs_dir"]
 INFERENCE_FRAGS_DIR = DATA["inference_frags_dir"]
 INFERENCE_OUTPUT_DIR = DATA["inference_output_dir"]
 INFERENCE_USE_REBINNED = MODEL.get("use_rebinned", True)
+INFERENCE_OUTPUT_SUFFIX = "latent.npz" if MODEL["name"] == "vae" else "score.txt"
 
 INPUT_TYPE = 'rebinned' if INFERENCE_USE_REBINNED else 'downsampled'
 

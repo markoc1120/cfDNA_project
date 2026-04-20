@@ -28,7 +28,7 @@ if STAGES.get("accessibility_scores", False):
 rule build_feature_matrices:
     input:
         model_inputs=expand(
-            f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_score.txt",
+            f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{INFERENCE_OUTPUT_SUFFIX}",
             sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
         ),
         metadata=DATA["metadata_path"],

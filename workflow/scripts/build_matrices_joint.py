@@ -9,6 +9,7 @@ STATS_KEYS = {
     'ifs': 'ifs_scores',
     'pfe': 'pfe_scores',
     'fdi': 'overlapping_fdi_scores',
+    'vae': 'mu',
 }
 
 
@@ -20,7 +21,7 @@ def parse_metadata(file_path: str, paper: str) -> dict:
 
 def parse_sid_dhs(path: str):
     basename = os.path.basename(path)
-    m = re.match(r'(.+?)__(.+?)_(?:downsampled_\w+\.\w+|score\.txt)$', basename)
+    m = re.match(r'(.+?)__(.+?)_(?:downsampled_\w+\.\w+|score\.txt|latent\.npz)$', basename)
     if m:
         return m.group(1), m.group(2)
     return None, None
@@ -68,7 +69,7 @@ def load_vectors(stat_name, input_files, metadata_map):
     all_vectors = np.vstack([e['vector'] for e in entries])
 
     loadings_df = None
-    if stat_name in ('lwps', 'ocf', 'fdi', 'ifs'):
+    if stat_name in ('lwps', 'ocf', 'fdi', 'ifs', 'vae'):
         pca = PCA(n_components=2)
         pc_values = pca.fit_transform(all_vectors)
         expl_var = pca.explained_variance_ratio_

@@ -28,12 +28,12 @@ def rebin_matrix(matrix: np.ndarray, bin_edges: np.ndarray) -> np.ndarray:
         if low < high:
             rebinned_rows[i] = matrix[low:high, :].sum(axis=0)
 
-    # column wise binning
+    # column wise binning + slice off 4 at each end (200 -> 192)
     rebinned = rebinned_rows.reshape(rebinned_rows.shape[0], -1, 10).sum(axis=2)
-    return rebinned
+    return rebinned[:, 4:-4]
 
 
-def compute_bin_edges(matrix_paths: list[str], matrix_rows: int, n_rebin_rows: int) -> np.ndarray:
+def compute_bin_edges(matrix_paths: list[str], matrix_rows: int, divisor: int = 8) -> np.ndarray:
     row_sums = np.zeros(matrix_rows)
     total = len(matrix_paths)
     for i, path in enumerate(matrix_paths):
@@ -42,11 +42,21 @@ def compute_bin_edges(matrix_paths: list[str], matrix_rows: int, n_rebin_rows: i
         row_sums += np.load(path).sum(axis=1)
 
     lengths_expanded = np.repeat(np.arange(matrix_rows), row_sums.astype(np.int64))
-    _, bin_edges = pd.qcut(lengths_expanded, q=n_rebin_rows, retbins=True, duplicates='drop')
-    bin_edges[0] = 0
-    bin_edges[-1] = matrix_rows
-    print(f'bin edges ({len(bin_edges) - 1} bins): {bin_edges}')
-    return bin_edges
+
+    start, end = 4, 13
+    for q in range(start, end):
+        _, edges = pd.qcut(lengths_expanded, q=q, retbins=True, duplicates='drop')
+        n = len(edges) - 1
+        if n % divisor == 0:
+            edges[0] = 0
+            edges[-1] = matrix_rows
+            print(f'bin edges ({n} bins, q={q}): {edges}')
+            return edges
+
+    raise RuntimeError(
+        f'no q in [{start * divisor},{(end - 1) * divisor}] produced a bin count '
+        f'divisible by {divisor}'
+    )
 
 
 def calculate_min_coverage(cov_files: list[str]) -> int:

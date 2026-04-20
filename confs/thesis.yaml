@@ -32,7 +32,6 @@ matrix:
   columns: 2500
   rows: 300
   shift: 250
-  n_rebin_rows: 50
 
 
 # Negative DHS generation
@@ -43,9 +42,9 @@ negative_dhs:
 
 # Model (swap by changing name + checkpoint)
 model:
-  name: "mlp"
-  checkpoint: "models/mlp_300x2000.pt"
-  use_rebinned: false
+  name: "vae"
+  checkpoint: "models/vae_dyn.pt"
+  use_rebinned: true
   params: {}
 
 
@@ -77,7 +76,7 @@ training:
   train_size: 80
   valid_size: 10
   batch_size: 32
-  n_epochs: 20
+  n_epochs: 200
   patience: 10
   optimizer: "adam"
   learning_rate: 0.001

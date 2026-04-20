@@ -85,7 +85,6 @@ rule compute_bin_edges:
         bin_edges=BIN_EDGES_FILE
     params:
         matrix_rows=MATRIX_ROWS,
-        n_rebin_rows=MATRIX["n_rebin_rows"]
     resources:
         runtime=30,
         mem_mb=8000

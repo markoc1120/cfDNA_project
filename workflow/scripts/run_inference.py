@@ -1,12 +1,11 @@
 import numpy as np
 import torch
-import torch.nn.functional as F
 
 from cfdna.models import get_model
 
 if 'snakemake' in globals():
     matrix_path = snakemake.input.matrix
-    score_path = snakemake.output.score
+    output_path = snakemake.output[0]
     checkpoint = snakemake.params.checkpoint
     model_type = snakemake.params.model_type
 
@@ -32,10 +31,13 @@ if 'snakemake' in globals():
     with torch.no_grad():
         if model_type == 'vae':
             vae_output = model(x)
-            score = F.mse_loss(vae_output.reconstruction, x).item()
+            np.savez(
+                output_path,
+                mu=vae_output.mu.squeeze(0).cpu().numpy(),
+                logvar=vae_output.logvar.squeeze(0).cpu().numpy(),
+            )
         else:
             logit = model(x).item()
             score = torch.sigmoid(torch.tensor(logit)).item()
-
-    with open(score_path, 'w') as f:
-        f.write(f'{score}\n')
+            with open(output_path, 'w') as f:
+                f.write(f'{score}\n')

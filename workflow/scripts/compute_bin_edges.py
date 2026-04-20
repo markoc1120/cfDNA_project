@@ -7,6 +7,5 @@ if 'snakemake' in globals():
     bin_edges = compute_bin_edges(
         matrix_paths,
         matrix_rows=snakemake.params.matrix_rows,
-        n_rebin_rows=snakemake.params.n_rebin_rows,
     )
     np.save(snakemake.output.bin_edges, bin_edges)

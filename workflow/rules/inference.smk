@@ -90,7 +90,7 @@ rule run_inference:
         matrix=inference_input,
         checkpoint=MODEL["checkpoint"],
     output:
-        score=temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_score.txt")
+        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{INFERENCE_OUTPUT_SUFFIX}"
     params:
         checkpoint=MODEL["checkpoint"],
         model_type=MODEL["name"],
