@@ -7,7 +7,6 @@ import torch.nn.functional as F
 from torch import Tensor
 
 VAEOutput = namedtuple('VAEOutput', ['reconstruction', 'mu', 'logvar'])
-VAELossComponents = namedtuple('VAELossComponents', ['total', 'recon', 'kl'])
 
 
 # (same as RebinnedCNNUnit: Conv+BN+LeakyReLU+Conv+BN+LeakyReLU+Pool)
@@ -71,27 +70,33 @@ class VAEModel(nn.Module):
 
         # encoder
         self.encoder = nn.Sequential(
-            EncoderBlock(1, C, pool_ks=(2, 4)),
-            EncoderBlock(C, C * 2, pool_ks=(2, 4)),
-            EncoderBlock(C * 2, C * 4, pool_ks=(2, 2)),
+            EncoderBlock(1, C, pool_ks=(2, 4)),  # 48x192 -> 24x48 (32 channels)
+            EncoderBlock(C, C * 2, pool_ks=(2, 4)),  # 24x48 -> 12x12 (64 channels)
+            EncoderBlock(C * 2, C * 4, pool_ks=(2, 2)),  # 12x12 -> 6x6 (128 channels)
         )
 
         # discover encoded spatial shape
         with torch.no_grad():
             probe = torch.zeros(1, 1, input_height, input_width)
             encoded = self.encoder(probe)
-            self._encoded_shape = encoded.shape[1:]
-        flat_dim = self._encoded_shape.numel()
+            self._encoded_shape = encoded.shape[1:]  # 6x6 (128 channels)
+        flat_dim = self._encoded_shape.numel()  # 128x6x6 -> 4608
 
         self.flatten = nn.Flatten()
-        self.fc_mu = nn.Linear(flat_dim, latent_dim)
-        self.fc_logvar = nn.Linear(flat_dim, latent_dim)
+        self.fc_mu = nn.Linear(flat_dim, latent_dim)  # 4608 -> 64
+        self.fc_logvar = nn.Linear(flat_dim, latent_dim)  # 4608 -> 64
 
         # decode
-        self.fc_decode = nn.Linear(latent_dim, flat_dim)
+        self.fc_decode = nn.Linear(
+            latent_dim, flat_dim
+        )  # 64 -> 4608, reshape 4608 to 6x6 (128 channels)
         self.decoder = nn.Sequential(
-            DecoderBlock(C * 4, C * 2, stride=(2, 2), output_padding=(1, 1)),
-            DecoderBlock(C * 2, C, stride=(2, 4), output_padding=(1, 3)),
+            DecoderBlock(
+                C * 4, C * 2, stride=(2, 2), output_padding=(1, 1)
+            ),  # 6x6 -> 12x12 (64 channels)
+            DecoderBlock(
+                C * 2, C, stride=(2, 4), output_padding=(1, 3)
+            ),  # 12x12 -> 24x48 (32 channels)
             nn.ConvTranspose2d(
                 C,
                 1,
@@ -99,7 +104,7 @@ class VAEModel(nn.Module):
                 stride=(2, 4),
                 padding=1,
                 output_padding=(1, 3),
-            ),
+            ),  # 24x48 -> 48x192 (1 channel)
         )
 
     def encode(self, x: Tensor) -> tuple[Tensor, Tensor]:
@@ -111,7 +116,7 @@ class VAEModel(nn.Module):
             std = torch.exp(0.5 * logvar)
             eps = torch.randn_like(std)
             return mu + std * eps
-        # during inference, use the mean directly (deterministic)
+        # during inference, use the mean directly (removing stohasticity)
         return mu
 
     def decode(self, z: Tensor) -> Tensor:
@@ -132,17 +137,14 @@ def vae_loss(
     mu: Tensor,
     logvar: Tensor,
     beta: float = 1.0,
-    return_components: bool = False,
-) -> Tensor | VAELossComponents:
-    recon_per_sample = F.mse_loss(recon, target, reduction='none').flatten(1).mean(dim=1)
-    recon_loss = recon_per_sample.mean()
+) -> Tensor:
+    # reconstruction loss
+    recon_loss = F.mse_loss(recon, target, reduction='mean')
 
-    # KL(q(z|x) || p(z)) where p(z) = N(0, I)
-    kl_per_sample = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), dim=1)
+    # KL divergence per sample
+    kl_per_sample = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), dim=-1)
     kl_loss = kl_per_sample.mean()
 
     total_loss = recon_loss + beta * kl_loss
 
-    if return_components:
-        return VAELossComponents(total=total_loss, recon=recon_loss, kl=kl_loss)
     return total_loss
