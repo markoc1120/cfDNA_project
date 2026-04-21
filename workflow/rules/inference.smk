@@ -36,6 +36,7 @@ rule inference_preprocess_fragments:
         dhs=f"{INFERENCE_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed"
     output:
         raw=temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy"),
+        gc=temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.gc.npy"),
         cov=temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt")
     params:
         matrix_rows=MATRIX_ROWS,
@@ -51,27 +52,17 @@ rule inference_preprocess_fragments:
 rule inference_downsample_matrices:
     input:
         raw=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
+        gc=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.gc.npy",
         mincov=MIN_COV_FILE
     output:
-        temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy")
+        downsampled=temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"),
+        cov=f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}.cov.txt"
     resources:
         runtime=5,
         mem_mb=300
     group: "downsample_matrices"
     script:
         "../scripts/downsample_matrices.py"
-
-rule calculate_coverage_after_downsample_matrices:
-    input:
-        f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"
-    output:
-        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}.cov.txt"
-    resources:
-        runtime=5,
-        mem_mb=50
-    group: "downsample_matrices"
-    script:
-        "../scripts/calculate_coverage.py"
 
 rule inference_rebin_matrices:
     input:

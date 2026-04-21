@@ -5,6 +5,7 @@ if 'snakemake' in globals():
         snakemake.input.fragment,
         snakemake.input.dhs,
         snakemake.output.raw,
+        snakemake.output.gc,
         snakemake.output.cov,
         matrix_rows=snakemake.params.matrix_rows,
         matrix_columns=snakemake.params.matrix_columns,
