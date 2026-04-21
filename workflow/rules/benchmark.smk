@@ -31,7 +31,7 @@ rule build_feature_matrices:
             f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{INFERENCE_OUTPUT_SUFFIX}",
             sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
         ),
-        metadata=DATA["metadata_path"],
+        metadata=DATA["inference_metadata_path"],
         config="confs/thesis.yaml",
         **accessibility_inputs
     params:

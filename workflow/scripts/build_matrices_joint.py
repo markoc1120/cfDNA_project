@@ -13,10 +13,16 @@ STATS_KEYS = {
 }
 
 
-def parse_metadata(file_path: str, paper: str) -> dict:
-    df = pd.read_csv(file_path)
-    df = df[df.publication == paper]
-    return dict(zip(df.sample_file_id, df.sample_disease))
+def parse_metadata(file_path: str) -> dict[str, str]:
+    df = pd.read_csv(file_path, sep='\t', dtype=str)
+
+    def to_label(patient_type: str) -> str:
+        pt = (patient_type or '').strip().lower()
+        if pt.startswith('lung cancer') or pt.startswith('met to lung'):
+            return 'Cancerous'
+        return 'Healthy'
+
+    return {row['Patient']: to_label(row['Patient type']) for _, row in df.iterrows()}
 
 
 def parse_sid_dhs(path: str):
@@ -46,8 +52,11 @@ def load_vectors(stat_name, input_files, metadata_map):
         if sid is None or sid not in metadata_map:
             continue
 
-        disease = metadata_map[sid]
-        binary_label = 'Healthy' if disease == 'Healthy' else 'Cancerous'
+        binary_label = metadata_map[sid]
+
+        # TODO: it is currently not the disease just the binary label
+        # cut -f 19 DELFI_LUCAS_article_supp_table1.tsv seems to be the right value
+        disease = binary_label
 
         vec = load_file(path, stat_name)
         if vec is None:
@@ -96,13 +105,12 @@ def load_vectors(stat_name, input_files, metadata_map):
 
 if 'snakemake' in globals():
     cfg = snakemake.config
-    metadata_path = cfg['data']['metadata_path']
-    paper = cfg['data']['paper']
+    metadata_path = cfg['data']['inference_metadata_path']
     final_dir = cfg['data']['final_matrices_dir']
     model = cfg['model']['name']
 
     os.makedirs(final_dir, exist_ok=True)
-    metadata_map = parse_metadata(metadata_path, paper)
+    metadata_map = parse_metadata(metadata_path)
 
     input_map = {
         'lwps': 'lwps_inputs',

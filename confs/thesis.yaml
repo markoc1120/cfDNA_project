@@ -1,20 +1,22 @@
 # Stages to run (toggle on/off)
 stages:
-  generate_negatives: true
-  accessibility_scores: true
+  generate_negatives: false
+  accessibility_scores: false
   benchmark: true
 
 
 # Data paths
 data:
-  # Input data should be created in the below folders:
-  input_frags_dir: "raw_data/training_frags/"
-  inference_frags_dir: "raw_data/inference_frags/"
+  input_frags_dir: "raw_data/DELFI1/"
+  inference_frags_dir: "raw_data/DELFI_LUCAS/"
+  fragment_filename: "frag.tsv.gz"
+
   training_dhs_dir: "raw_data/training_dhs/"
   inference_dhs_dir: "raw_data/inference_dhs/"
   hg_38_2bit_file: "raw_data/hg38.2bit"
-  metadata_path: "raw_data/meta_data.csv"
-  paper: "Genome-wide cell-free DNA fragmentation in patients with cancer"
+
+  training_metadata_path: "raw_data/meta/DELFI1_metadata.tsv"
+  inference_metadata_path: "raw_data/meta/DELFI_LUCAS_article_supp_table1.tsv"
 
   # The below folders are automatically generated:
   training_output_dir: "data/training_frags/"

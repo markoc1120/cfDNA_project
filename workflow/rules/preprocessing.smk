@@ -1,8 +1,9 @@
 import glob
+import os
 
 SAMPLES = [
-    f.split('/')[-1].replace('.hg38.frag.gz', '')
-    for f in glob.glob(f"{INPUT_FRAGS_DIR}*.hg38.frag.gz")
+    os.path.basename(os.path.dirname(p))
+    for p in glob.glob(f"{INPUT_FRAGS_DIR}*/{FRAG_FILENAME}")
 ]
 DHS_FILES = [
     f.split('/')[-1].replace('.bed', '')
@@ -38,7 +39,7 @@ rule train_downsample_dhs:
 
 rule train_preprocess_fragments:
     input:
-        fragment=f"{INPUT_FRAGS_DIR}{{sample}}.hg38.frag.gz",
+        fragment=f"{INPUT_FRAGS_DIR}{{sample}}/{FRAG_FILENAME}",
         dhs=f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed"
     output:
         raw=temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy"),

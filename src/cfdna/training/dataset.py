@@ -1,5 +1,5 @@
 import glob
-import re
+import os
 from collections import defaultdict
 from typing import DefaultDict
 
@@ -7,7 +7,11 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, random_split
 
-SID_PATTERN = r'EE\d+'
+
+def extract_sid(path: str) -> str | None:
+    base = os.path.basename(path)
+    sid, sep, _ = base.partition('__')
+    return sid if sep else None
 
 
 def build_pairs(matrix_dir: str, suffix: str = 'downsampled', only_positive: bool = False):
@@ -25,11 +29,9 @@ def build_pairs(matrix_dir: str, suffix: str = 'downsampled', only_positive: boo
         )
 
     for p in npy_files:
-        sid_result = re.search(SID_PATTERN, p)
-        if not sid_result:
+        sid = extract_sid(p)
+        if sid is None:
             continue
-
-        sid = sid_result[0]
 
         is_neg = 'negative' in p.lower()
         if is_neg and only_positive:

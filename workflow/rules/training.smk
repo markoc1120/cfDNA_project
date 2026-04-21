@@ -9,7 +9,7 @@ rule train_model:
     output:
         checkpoint=MODEL["checkpoint"],
     resources:
-        runtime=300,
+        runtime=600,
         mem_mb=16000
     script:
         "../scripts/train_model.py"

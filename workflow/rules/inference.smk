@@ -1,8 +1,9 @@
 import glob as glob
+import os
 
 INFERENCE_SAMPLES = [
-    f.split('/')[-1].replace('.hg38.frag.gz', '')
-    for f in glob.glob(f"{INFERENCE_FRAGS_DIR}*.hg38.frag.gz")
+    os.path.basename(os.path.dirname(p))
+    for p in glob.glob(f"{INFERENCE_FRAGS_DIR}*/{FRAG_FILENAME}")
 ]
 INFERENCE_DHS_FILES = [
     f.split('/')[-1].replace('.bed', '')
@@ -31,7 +32,7 @@ rule inference_preprocess_dhs:
 
 rule inference_preprocess_fragments:
     input:
-        fragment=f"{INFERENCE_FRAGS_DIR}{{sample}}.hg38.frag.gz",
+        fragment=f"{INFERENCE_FRAGS_DIR}{{sample}}/{FRAG_FILENAME}",
         dhs=f"{INFERENCE_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed"
     output:
         raw=temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy"),
