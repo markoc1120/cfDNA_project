@@ -53,7 +53,8 @@ class Preprocessor:
     def parse_fragment(self, line: str) -> tuple:
         parsed_fragment = line.strip().split('\t')
         chr, start, end = parsed_fragment[0:3]
-        return chr, int(start), int(end)
+        gc_fraction = parsed_fragment[-1]
+        return chr, int(start), int(end), float(gc_fraction)
 
     # length vs fragments' relative midpoint
     def generate_matrix(self, should_save=True) -> np.ndarray:
@@ -63,7 +64,7 @@ class Preprocessor:
 
         with gzip.open(self.fragment_file, 'rt') as f:
             for line in f:
-                chr, start, end = self.parse_fragment(line)
+                chr, start, end, gc_fraction = self.parse_fragment(line)
                 if chr not in {f'chr{i}' for i in range(1, 23)} | {'chrX', 'chrY'}:
                     continue
 
@@ -103,7 +104,7 @@ class Preprocessor:
 
                 # only track fragments those are in our boundaries
                 if rel_midpoint >= 0 and rel_midpoint < self.matrix_columns:
-                    result[fragment_length, rel_midpoint] += 1
+                    result[fragment_length, rel_midpoint] += gc_fraction
 
         if should_save:
             logger.info(f'Saving matrix for {self.output_file} and cov for {self.output_cov}')
@@ -111,5 +112,5 @@ class Preprocessor:
             total_cov = np.sum(result)
             np.save(self.output_file, result)
             with open(self.output_cov, 'w') as cov_f:
-                cov_f.write(str(int(total_cov)))
+                cov_f.write(str(float(total_cov)))
         return result

@@ -59,9 +59,9 @@ def compute_bin_edges(matrix_paths: list[str], matrix_rows: int, divisor: int = 
     )
 
 
-def calculate_min_coverage(cov_files: list[str]) -> int:
+def calculate_min_coverage(cov_files: list[str]) -> float:
     vals = []
     for cov in cov_files:
         with open(cov) as f:
-            vals.append(int(f.read().strip()))
+            vals.append(float(f.read().strip()))
     return min(vals)
