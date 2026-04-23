@@ -14,7 +14,6 @@ class Preprocessor:
         fragment_file: str,
         dhs_file: str,
         output_file: str,
-        output_gc_file: str,
         output_cov: str,
         matrix_rows: int,
         matrix_columns: int,
@@ -23,7 +22,6 @@ class Preprocessor:
         self.fragment_file = fragment_file
         self.dhs_file = dhs_file
         self.output_file = output_file
-        self.output_gc_file = output_gc_file
         self.output_cov = output_cov
         self.DHS_sites = None
         self.initial_DHS_length = None
@@ -55,19 +53,17 @@ class Preprocessor:
     def parse_fragment(self, line: str) -> tuple:
         parsed_fragment = line.strip().split('\t')
         chr, start, end = parsed_fragment[0:3]
-        gc_fraction = parsed_fragment[-1]
-        return chr, int(start), int(end), float(gc_fraction)
+        return chr, int(start), int(end)
 
     # length vs fragments' relative midpoint
-    def generate_matrix(self, should_save=True) -> tuple[np.ndarray, np.ndarray]:
+    def generate_matrix(self, should_save=True) -> np.ndarray:
         self.DHS_sites, self.initial_DHS_length = self.read_dhs_to_memory()
-        counts = np.zeros((self.matrix_rows, self.matrix_columns), dtype=np.int64)
-        gc_sums = np.zeros((self.matrix_rows, self.matrix_columns), dtype=np.float64)
+        result = np.zeros((self.matrix_rows, self.matrix_columns))
         curr_dhs_start, curr_dhs_end, curr_chr = self.get_curr_dhs()
 
         with gzip.open(self.fragment_file, 'rt') as f:
             for line in f:
-                chr, start, end, gc_fraction = self.parse_fragment(line)
+                chr, start, end = self.parse_fragment(line)
                 if chr not in {f'chr{i}' for i in range(1, 23)} | {'chrX', 'chrY'}:
                     continue
 
@@ -107,20 +103,13 @@ class Preprocessor:
 
                 # only track fragments those are in our boundaries
                 if rel_midpoint >= 0 and rel_midpoint < self.matrix_columns:
-                    counts[fragment_length, rel_midpoint] += 1
-                    gc_sums[fragment_length, rel_midpoint] += gc_fraction
+                    result[fragment_length, rel_midpoint] += 1
 
         if should_save:
-            logger.info(
-                f'Saving counts to {self.output_file}, gc sums to {self.output_gc_file}, '
-                f'cov to {self.output_cov}'
-            )
-            col_slice = slice(self.matrix_shift, self.matrix_columns - self.matrix_shift)
-            counts = counts[:, col_slice]
-            gc_sums = gc_sums[:, col_slice]
-            total_cov = int(counts.sum())
-            np.save(self.output_file, counts)
-            np.save(self.output_gc_file, gc_sums)
+            logger.info(f'Saving matrix for {self.output_file} and cov for {self.output_cov}')
+            result = result[:, self.matrix_shift : self.matrix_columns - self.matrix_shift]
+            total_cov = np.sum(result)
+            np.save(self.output_file, result)
             with open(self.output_cov, 'w') as cov_f:
-                cov_f.write(str(total_cov))
-        return counts, gc_sums
+                cov_f.write(str(int(total_cov)))
+        return result

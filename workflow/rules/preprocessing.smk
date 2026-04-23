@@ -43,7 +43,6 @@ rule train_preprocess_fragments:
         dhs=f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed"
     output:
         raw=temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy"),
-        gc=temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.gc.npy"),
         cov=temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt")
     params:
         matrix_rows=MATRIX_ROWS,
@@ -70,11 +69,9 @@ rule calculate_min_coverage:
 rule train_downsample_matrices:
     input:
         raw=f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
-        gc=f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.gc.npy",
         mincov=MIN_COV_FILE
     output:
-        downsampled=f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
-        cov=temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.cov.txt")
+        f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"
     resources:
         runtime=5,
         mem_mb=150
