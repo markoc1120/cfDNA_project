@@ -15,14 +15,7 @@ STATS_KEYS = {
 
 def parse_metadata(file_path: str) -> dict[str, str]:
     df = pd.read_csv(file_path, sep='\t', dtype=str)
-
-    def to_label(patient_type: str) -> str:
-        pt = (patient_type or '').strip().lower()
-        if pt.startswith('lung cancer') or pt.startswith('met to lung'):
-            return 'Cancerous'
-        return 'Healthy'
-
-    return {row['Patient']: to_label(row['Patient type']) for _, row in df.iterrows()}
+    return {row['Patient']: row['Patient type'] for _, row in df.iterrows()}
 
 
 def parse_sid_dhs(path: str):

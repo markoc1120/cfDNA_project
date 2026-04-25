@@ -8,7 +8,6 @@ rule calculate_lwps:
     params:
         statistic="lwps"
     resources:
-        mem_mb=100,
         runtime=10
     group: "lwps"
     script:
@@ -24,7 +23,6 @@ rule calculate_fdi:
     params:
         statistic="fdi"
     resources:
-        mem_mb=300,
         runtime=10
     group: "fdi"
     script:
@@ -40,7 +38,6 @@ rule calculate_ifs:
     params:
         statistic="ifs"
     resources:
-        mem_mb=60,
         runtime=10
     group: "ifs"
     script:
@@ -56,7 +53,6 @@ rule calculate_pfe:
     params:
         statistic="pfe"
     resources:
-        mem_mb=100,
         runtime=10
     group: "pfe"
     script:
@@ -72,7 +68,6 @@ rule calculate_ocf:
     params:
         statistic="ocf"
     resources:
-        mem_mb=160,
         runtime=10
     group: "ocf"
     script:

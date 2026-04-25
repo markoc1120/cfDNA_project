@@ -24,8 +24,7 @@ rule inference_preprocess_dhs:
     params:
         matrix_columns=MATRIX_COLUMNS
     resources:
-        runtime=10,
-        mem_mb=300
+        runtime=20
     group: "prep_dhs"
     script:
         "../scripts/preprocess_dhs.py"
@@ -42,8 +41,7 @@ rule inference_preprocess_fragments:
         matrix_columns=MATRIX_COLUMNS,
         matrix_shift=MATRIX_SHIFT
     resources:
-        runtime=10,
-        mem_mb=200
+        runtime=20
     group: "prep_frag"
     script:
         "../scripts/preprocess_fragments.py"
@@ -55,8 +53,7 @@ rule inference_downsample_matrices:
     output:
         temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy")
     resources:
-        runtime=5,
-        mem_mb=300
+        runtime=5
     group: "downsample_matrices"
     script:
         "../scripts/downsample_matrices.py"
@@ -67,8 +64,7 @@ rule calculate_coverage_after_downsample_matrices:
     output:
         f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}.cov.txt"
     resources:
-        runtime=5,
-        mem_mb=50
+        runtime=5
     group: "downsample_matrices"
     script:
         "../scripts/calculate_coverage.py"
@@ -80,8 +76,7 @@ rule inference_rebin_matrices:
     output:
         f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy"
     resources:
-        runtime=10,
-        mem_mb=150
+        runtime=10
     group: "rebin_matrices"
     script:
         "../scripts/rebin_matrices.py"
@@ -96,8 +91,7 @@ rule run_inference:
         checkpoint=MODEL["checkpoint"],
         model_type=MODEL["name"],
     resources:
-        runtime=10,
-        mem_mb=300
+        runtime=10
     group: "inference"
     script:
         "../scripts/run_inference.py"

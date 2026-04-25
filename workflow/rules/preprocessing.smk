@@ -19,8 +19,7 @@ rule train_preprocess_dhs:
     params:
         matrix_columns=MATRIX_COLUMNS
     resources:
-        runtime=10,
-        mem_mb=300
+        runtime=10
     group: "prep_dhs"
     script:
         "../scripts/preprocess_dhs.py"
@@ -31,8 +30,7 @@ rule train_downsample_dhs:
     output:
         downsampled_dhs=temp(expand(f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed", dhs_file=DHS_FILES))
     resources:
-        runtime=5,
-        mem_mb=1000
+        runtime=5
     group: "downsample_dhs"
     script:
         "../scripts/downsample_dhs.py"
@@ -49,8 +47,7 @@ rule train_preprocess_fragments:
         matrix_columns=MATRIX_COLUMNS,
         matrix_shift=MATRIX_SHIFT
     resources:
-        runtime=10,
-        mem_mb=200
+        runtime=20
     group: "prep_frag"
     script:
         "../scripts/preprocess_fragments.py"
@@ -61,8 +58,7 @@ rule calculate_min_coverage:
     output:
         MIN_COV_FILE
     resources:
-        runtime=10,
-        mem_mb=500,
+        runtime=10
     script:
         "../scripts/calculate_min_coverage.py"
 
@@ -73,8 +69,7 @@ rule train_downsample_matrices:
     output:
         f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"
     resources:
-        runtime=5,
-        mem_mb=150
+        runtime=5
     group: "downsample_matrices"
     script:
         "../scripts/downsample_matrices.py"
@@ -87,8 +82,7 @@ rule compute_bin_edges:
     params:
         matrix_rows=MATRIX_ROWS,
     resources:
-        runtime=30,
-        mem_mb=8000
+        runtime=30
     script:
         "../scripts/compute_bin_edges.py"
 
@@ -99,8 +93,7 @@ rule rebin_matrices:
     output:
         f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy"
     resources:
-        runtime=5,
-        mem_mb=150
+        runtime=2
     group: "rebin_matrices"
     script:
         "../scripts/rebin_matrices.py"

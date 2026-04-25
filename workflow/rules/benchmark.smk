@@ -42,7 +42,6 @@ rule build_feature_matrices:
             stat=BENCH_STATS,
         ),
     resources:
-        runtime=30,
-        mem_mb=8000
+        runtime=30
     script:
         "../scripts/build_matrices_joint.py"

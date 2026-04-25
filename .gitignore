@@ -2,6 +2,7 @@
 
 data/
 raw_data/
+previous_datas/
 *.pt
 
 .snakemake*

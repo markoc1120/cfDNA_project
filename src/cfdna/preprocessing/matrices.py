@@ -44,7 +44,8 @@ def compute_bin_edges(matrix_paths: list[str], matrix_rows: int, divisor: int = 
     lengths_expanded = np.repeat(np.arange(matrix_rows), row_sums.astype(np.int64))
 
     start, end = 4, 13
-    for q in range(start, end):
+    for multiplier in range(start, end):
+        q = multiplier * divisor
         _, edges = pd.qcut(lengths_expanded, q=q, retbins=True, duplicates='drop')
         n = len(edges) - 1
         if n % divisor == 0:
