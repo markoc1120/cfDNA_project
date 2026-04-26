@@ -138,13 +138,7 @@ def vae_loss(
     logvar: Tensor,
     beta: float = 1.0,
 ) -> Tensor:
-    # reconstruction loss
-    recon_loss = F.mse_loss(recon, target, reduction='mean')
-
-    # KL divergence per sample
-    kl_per_sample = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), dim=-1)
-    kl_loss = kl_per_sample.mean()
-
-    total_loss = recon_loss + beta * kl_loss
-
-    return total_loss
+    num_features = target[0].numel()
+    recon_loss = F.mse_loss(recon, target)
+    kl = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), dim=-1).mean()
+    return recon_loss + beta * kl / num_features
