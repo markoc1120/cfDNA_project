@@ -32,10 +32,19 @@ rule inference_preprocess_dhs:
 rule inference_preprocess_fragments:
     input:
         fragment=f"{INFERENCE_FRAGS_DIR}{{sample}}/{FRAG_FILENAME}",
-        dhs=f"{INFERENCE_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed"
+        dhs=expand(
+            f"{INFERENCE_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed",
+            dhs_file=INFERENCE_DHS_FILES,
+        )
     output:
-        raw=temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy"),
-        cov=temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt")
+        raw=[
+            temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{dhs_file}.npy")
+            for dhs_file in INFERENCE_DHS_FILES
+        ],
+        cov=[
+            temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{dhs_file}.cov.txt")
+            for dhs_file in INFERENCE_DHS_FILES
+        ]
     params:
         matrix_rows=MATRIX_ROWS,
         matrix_columns=MATRIX_COLUMNS,

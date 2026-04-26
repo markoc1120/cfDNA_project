@@ -38,10 +38,19 @@ rule train_downsample_dhs:
 rule train_preprocess_fragments:
     input:
         fragment=f"{INPUT_FRAGS_DIR}{{sample}}/{FRAG_FILENAME}",
-        dhs=f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed"
+        dhs=expand(
+            f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed",
+            dhs_file=DHS_FILES,
+        )
     output:
-        raw=temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy"),
-        cov=temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt")
+        raw=[
+            temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{dhs_file}.npy")
+            for dhs_file in DHS_FILES
+        ],
+        cov=[
+            temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{dhs_file}.cov.txt")
+            for dhs_file in DHS_FILES
+        ]
     params:
         matrix_rows=MATRIX_ROWS,
         matrix_columns=MATRIX_COLUMNS,
