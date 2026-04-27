@@ -66,6 +66,8 @@ rule calculate_min_coverage:
         covs=expand(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt", sample=SAMPLES, dhs_file=DHS_FILES)
     output:
         MIN_COV_FILE
+    params:
+        user_min_cov=MIN_COV_OVERRIDE
     resources:
         runtime=10
     script:

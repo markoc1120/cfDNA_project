@@ -53,6 +53,7 @@ model:
 # Preprocessing transforms (applied in order)
 # options: "sum_normalization", "log_transform", "standardization", "slice"
 preprocessing:
+  # min_cov: 200000  # if unset/commented, falls back to calculate_min_coverage
   transforms: []
   # # example 1: sum normalize
   # transforms:

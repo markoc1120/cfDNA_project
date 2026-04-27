@@ -13,6 +13,7 @@ TRAINING_METADATA_PATH = DATA["training_metadata_path"]
 TRAIN_DHS_DIR = DATA["training_dhs_dir"]
 TRAIN_OUTPUT_DIR = DATA["training_output_dir"]
 MIN_COV_FILE = DATA["training_min_coverage_file"]
+MIN_COV_OVERRIDE = PREPROCESSING.get("min_cov")
 BIN_EDGES_FILE = DATA["training_bin_edges_file"]
 MATRIX_COLUMNS = MATRIX["columns"]
 MATRIX_ROWS = MATRIX["rows"]
