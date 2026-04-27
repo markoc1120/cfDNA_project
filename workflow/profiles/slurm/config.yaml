@@ -1,5 +1,5 @@
 executor: slurm
-jobs: 50
+jobs: 100
 cores: 2
 use-conda: true
 default-resources:
