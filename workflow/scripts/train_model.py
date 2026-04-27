@@ -49,6 +49,8 @@ if 'snakemake' in globals():
         suffix=snakemake.params.input_type,
         only_positive=(model_name == 'vae'),
     )
+    train_mean = getattr(train_loader.dataset, 'train_mean', None)
+    train_std = getattr(train_loader.dataset, 'train_std', None)
 
     # build model
     model_params = model_cfg.get('params', {})
@@ -130,3 +132,8 @@ if 'snakemake' in globals():
     history_path = model_cfg['checkpoint'].replace('.pt', '.history.pt')
     torch.save(history, history_path)
     logger.info(f'Training history saved to: {history_path}')
+
+    if train_mean is not None and train_std is not None:
+        stats_path = model_cfg['checkpoint'].replace('.pt', '.stats.pt')
+        torch.save({'train_mean': train_mean, 'train_std': train_std}, stats_path)
+        logger.info(f'Standardization stats saved to: {stats_path}')
