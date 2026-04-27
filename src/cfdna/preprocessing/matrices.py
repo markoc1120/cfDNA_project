@@ -66,3 +66,17 @@ def calculate_min_coverage(cov_files: list[str]) -> float:
         with open(cov) as f:
             vals.append(float(f.read().strip()))
     return min(vals)
+
+
+def sum_coverage_files(cov_files: list[str]) -> float:
+    total = 0.0
+    for cov in cov_files:
+        with open(cov) as f:
+            total += float(f.read().strip())
+    return total
+
+
+def normalize_matrix(matrix: np.ndarray, sample_total: float, scale: float = 1e6) -> np.ndarray:
+    if sample_total == 0:
+        return matrix.astype(np.float32)
+    return (matrix * scale / sample_total).astype(np.float32)

@@ -55,32 +55,56 @@ rule inference_preprocess_fragments:
     script:
         "../scripts/preprocess_fragments.py"
 
-rule inference_downsample_matrices:
-    input:
-        raw=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
-        mincov=MIN_COV_FILE
-    output:
-        temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy")
-    resources:
-        runtime=5
-    group: "downsample_matrices"
-    script:
-        "../scripts/downsample_matrices.py"
+if COVERAGE_HANDLING == "downsample":
+    rule inference_downsample_matrices:
+        input:
+            raw=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
+            mincov=MIN_COV_FILE
+        output:
+            temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy")
+        resources:
+            runtime=5
+        group: "downsample_matrices"
+        script:
+            "../scripts/downsample_matrices.py"
 
-rule calculate_coverage_after_downsample_matrices:
+if COVERAGE_HANDLING == "normalize":
+    rule inference_calculate_sample_coverage:
+        input:
+            covs=expand(f"{INFERENCE_OUTPUT_DIR}{{{{sample}}}}__{{dhs_file}}.cov.txt", dhs_file=INFERENCE_DHS_FILES)
+        output:
+            f"{INFERENCE_OUTPUT_DIR}{{sample}}_sample_coverage.txt"
+        resources:
+            runtime=5
+        script:
+            "../scripts/calculate_sample_coverage.py"
+
+    rule inference_normalize_matrices:
+        input:
+            raw=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
+            sample_cov=f"{INFERENCE_OUTPUT_DIR}{{sample}}_sample_coverage.txt"
+        output:
+            temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_normalized.npy")
+        resources:
+            runtime=5
+        group: "normalize_matrices"
+        script:
+            "../scripts/normalize_matrices.py"
+
+rule calculate_coverage_after_coverage_handling:
     input:
-        f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"
+        f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}.npy"
     output:
         f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}.cov.txt"
     resources:
         runtime=5
-    group: "downsample_matrices"
+    group: "coverage_handling"
     script:
         "../scripts/calculate_coverage.py"
 
 rule inference_rebin_matrices:
     input:
-        matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
+        matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}.npy",
         bin_edges=BIN_EDGES_FILE
     output:
         f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy"

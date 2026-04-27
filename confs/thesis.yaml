@@ -53,7 +53,12 @@ model:
 # Preprocessing transforms (applied in order)
 # options: "sum_normalization", "log_transform", "standardization", "slice"
 preprocessing:
-  # min_cov: 200000  # if unset/commented, falls back to calculate_min_coverage
+  # coverage handling: downsample | normalize | none
+  #   downsample -> multinomial-downsample each matrix to MIN_COV_FILE (or min_cov override)
+  #   normalize -> per-sample counts per million (CPM) scaling: matrix * 1e6 / sample_total
+  #   none -> feed raw matrices through (requires use_rebinned: true)
+  coverage_handling: normalize
+  # min_cov: 200000  # only used when coverage_handling is set to downsample
   transforms: []
   # # example 1: sum normalize
   # transforms:

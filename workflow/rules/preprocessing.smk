@@ -61,33 +61,57 @@ rule train_preprocess_fragments:
     script:
         "../scripts/preprocess_fragments.py"
 
-rule calculate_min_coverage:
-    input:
-        covs=expand(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt", sample=SAMPLES, dhs_file=DHS_FILES)
-    output:
-        MIN_COV_FILE
-    params:
-        user_min_cov=MIN_COV_OVERRIDE
-    resources:
-        runtime=10
-    script:
-        "../scripts/calculate_min_coverage.py"
+if COVERAGE_HANDLING == "downsample":
+    rule calculate_min_coverage:
+        input:
+            covs=expand(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt", sample=SAMPLES, dhs_file=DHS_FILES)
+        output:
+            MIN_COV_FILE
+        params:
+            user_min_cov=MIN_COV_OVERRIDE
+        resources:
+            runtime=10
+        script:
+            "../scripts/calculate_min_coverage.py"
 
-rule train_downsample_matrices:
-    input:
-        raw=f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
-        mincov=MIN_COV_FILE
-    output:
-        f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"
-    resources:
-        runtime=5
-    group: "downsample_matrices"
-    script:
-        "../scripts/downsample_matrices.py"
+    rule train_downsample_matrices:
+        input:
+            raw=f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
+            mincov=MIN_COV_FILE
+        output:
+            f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"
+        resources:
+            runtime=5
+        group: "downsample_matrices"
+        script:
+            "../scripts/downsample_matrices.py"
+
+if COVERAGE_HANDLING == "normalize":
+    rule train_calculate_sample_coverage:
+        input:
+            covs=expand(f"{TRAIN_OUTPUT_DIR}{{{{sample}}}}__{{dhs_file}}.cov.txt", dhs_file=DHS_FILES)
+        output:
+            f"{TRAIN_OUTPUT_DIR}{{sample}}_sample_coverage.txt"
+        resources:
+            runtime=5
+        script:
+            "../scripts/calculate_sample_coverage.py"
+
+    rule train_normalize_matrices:
+        input:
+            raw=f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
+            sample_cov=f"{TRAIN_OUTPUT_DIR}{{sample}}_sample_coverage.txt"
+        output:
+            f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_normalized.npy"
+        resources:
+            runtime=5
+        group: "normalize_matrices"
+        script:
+            "../scripts/normalize_matrices.py"
 
 rule compute_bin_edges:
     input:
-        matrices=expand(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy", sample=SAMPLES, dhs_file=DHS_FILES)
+        matrices=expand(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}.npy", sample=SAMPLES, dhs_file=DHS_FILES)
     output:
         bin_edges=BIN_EDGES_FILE
     params:
@@ -99,7 +123,7 @@ rule compute_bin_edges:
 
 rule rebin_matrices:
     input:
-        matrix = f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy",
+        matrix = f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}.npy",
         bin_edges = BIN_EDGES_FILE
     output:
         f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy"

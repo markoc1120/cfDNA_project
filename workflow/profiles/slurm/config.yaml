@@ -21,6 +21,8 @@ group-components:
   downsample_dhs: 50
   prep_frag: 50
   downsample_matrices: 50
+  normalize_matrices: 50
+  coverage_handling: 50
   rebin_matrices: 50
   inference: 50
   pfe: 50

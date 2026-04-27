@@ -19,6 +19,19 @@ MATRIX_COLUMNS = MATRIX["columns"]
 MATRIX_ROWS = MATRIX["rows"]
 MATRIX_SHIFT = MATRIX["shift"]
 
+COVERAGE_HANDLING = PREPROCESSING.get("coverage_handling", "downsample")
+_COVERAGE_SUFFIX_BY_MODE = {
+    "downsample": "downsampled",
+    "normalize": "normalized",
+    "none": "",
+}
+if COVERAGE_HANDLING not in _COVERAGE_SUFFIX_BY_MODE:
+    raise ValueError(
+        f"preprocessing.coverage_handling must be one of "
+        f"{list(_COVERAGE_SUFFIX_BY_MODE)}, got {COVERAGE_HANDLING}"
+    )
+COVERAGE_SUFFIX = _COVERAGE_SUFFIX_BY_MODE[COVERAGE_HANDLING]
+
 # inference
 INFERENCE_DHS_DIR = DATA["inference_dhs_dir"]
 INFERENCE_FRAGS_DIR = DATA["inference_frags_dir"]
@@ -27,7 +40,12 @@ INFERENCE_OUTPUT_DIR = DATA["inference_output_dir"]
 INFERENCE_USE_REBINNED = MODEL.get("use_rebinned", True)
 INFERENCE_OUTPUT_SUFFIX = "latent.npz" if MODEL["name"] == "vae" else "score.txt"
 
-INPUT_TYPE = 'rebinned' if INFERENCE_USE_REBINNED else 'downsampled'
+if INFERENCE_USE_REBINNED:
+    INPUT_TYPE = 'rebinned'
+elif COVERAGE_HANDLING == 'none':
+    raise ValueError("coverage_handling='none' requires use_rebinned=true")
+else:
+    INPUT_TYPE = COVERAGE_SUFFIX
 
 # accessibility score
 ACCESSIBILITY_DIR = DATA["accessibility_scores_dir"]
