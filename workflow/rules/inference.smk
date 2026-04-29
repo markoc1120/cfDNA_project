@@ -20,7 +20,7 @@ rule inference_preprocess_dhs:
     input:
         dhs=f"{INFERENCE_DHS_DIR}{{dhs_file}}.bed"
     output:
-        dhs_preprocessed=temp(f"{INFERENCE_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed")
+        dhs_preprocessed=f"{INFERENCE_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed"
     params:
         matrix_columns=MATRIX_COLUMNS
     resources:

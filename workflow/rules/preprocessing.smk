@@ -28,7 +28,7 @@ rule train_downsample_dhs:
     input:
         dhs=expand(f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed", dhs_file=DHS_FILES)
     output:
-        downsampled_dhs=temp(expand(f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed", dhs_file=DHS_FILES))
+        downsampled_dhs=expand(f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed", dhs_file=DHS_FILES)
     resources:
         runtime=5
     group: "downsample_dhs"
@@ -56,7 +56,7 @@ rule train_preprocess_fragments:
         matrix_columns=MATRIX_COLUMNS,
         matrix_shift=MATRIX_SHIFT
     resources:
-        runtime=20
+        runtime=40
     group: "prep_frag"
     script:
         "../scripts/preprocess_fragments.py"
