@@ -1,5 +1,4 @@
 import os
-import re
 
 import numpy as np
 import pandas as pd
@@ -18,11 +17,14 @@ def parse_metadata(file_path: str) -> dict[str, str]:
     return {row['Patient']: row['Patient type'] for _, row in df.iterrows()}
 
 
-def parse_sid_dhs(path: str):
+def parse_sid_dhs(path: str, dhs_files: list[str]):
     basename = os.path.basename(path)
-    m = re.match(r'(.+?)__(.+?)_(?:downsampled_\w+\.\w+|score\.txt|latent\.npz)$', basename)
-    if m:
-        return m.group(1), m.group(2)
+    sample, sep, rest = basename.partition('__')
+    if not sep:
+        return None, None
+    for dhs in dhs_files:
+        if rest.startswith(f'{dhs}_') or rest.startswith(f'{dhs}.'):
+            return sample, dhs
     return None, None
 
 
@@ -38,10 +40,10 @@ def load_file(path: str, stat_name: str):
     return None
 
 
-def load_vectors(stat_name, input_files, metadata_map):
+def load_vectors(stat_name, input_files, metadata_map, dhs_files):
     entries = []
     for path in input_files:
-        sid, dhs = parse_sid_dhs(path)
+        sid, dhs = parse_sid_dhs(path, dhs_files)
         if sid is None or sid not in metadata_map:
             continue
 
@@ -102,6 +104,8 @@ if 'snakemake' in globals():
     final_dir = cfg['data']['final_matrices_dir']
     model = cfg['model']['name']
 
+    dhs_files = list(snakemake.params.dhs_files)
+
     os.makedirs(final_dir, exist_ok=True)
     metadata_map = parse_metadata(metadata_path)
 
@@ -122,7 +126,7 @@ if 'snakemake' in globals():
 
     for stat_name, input_files in stat_inputs.items():
         print(f'Processing: {stat_name}')
-        df, loadings_df = load_vectors(stat_name, input_files, metadata_map)
+        df, loadings_df = load_vectors(stat_name, input_files, metadata_map, dhs_files)
 
         if df is not None:
             out_path = os.path.join(final_dir, f'feature_matrix_{stat_name}.parquet')
