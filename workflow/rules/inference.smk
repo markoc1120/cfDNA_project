@@ -74,7 +74,7 @@ if COVERAGE_HANDLING == "normalize":
         input:
             covs=expand(f"{INFERENCE_BASE_MATRICES_DIR}{{{{sample}}}}__{{dhs_file}}.cov.txt", dhs_file=INFERENCE_DHS_FILES)
         output:
-            f"{INFERENCE_OUTPUT_DIR}{{sample}}_sample_coverage.txt"
+            temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}_sample_coverage.txt")
         resources:
             runtime=5
         script:
@@ -108,7 +108,7 @@ rule inference_rebin_matrices:
         matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}.npy",
         bin_edges=BIN_EDGES_FILE
     output:
-        f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy"
+        temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy")
     resources:
         runtime=10
     group: "rebin_matrices"
