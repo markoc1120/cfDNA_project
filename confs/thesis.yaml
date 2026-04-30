@@ -2,6 +2,10 @@
 stages:
   generate_base_matrices: true
   generate_negatives: false
+  prepare_dhs: true
+  collect_data: true
+  train: true
+  inference: true
   accessibility_scores: true
   benchmark: true
 

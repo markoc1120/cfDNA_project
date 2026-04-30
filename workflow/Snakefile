@@ -16,9 +16,14 @@ include: "rules/common.smk"
 # include rule files
 if STAGES.get('generate_negatives', False):
     include: "rules/generate_negative_dhs.smk"
-include: "rules/preprocessing.smk"
-include: "rules/training.smk"
-include: "rules/inference.smk"
+if STAGES.get('prepare_dhs', True):
+    include: "rules/prepare_dhs.smk"
+if STAGES.get('collect_data', True):
+    include: "rules/preprocessing.smk"
+if STAGES.get('train', True):
+    include: "rules/training.smk"
+if STAGES.get('inference', True):
+    include: "rules/inference.smk"
 if STAGES.get("accessibility_scores", False):
     include: "rules/accessibility_scores.smk"
 if STAGES.get("benchmark", False):
@@ -31,14 +36,22 @@ TARGETS = []
 if STAGES.get("generate_negatives", False):
     TARGETS.append(f"{TRAIN_DHS_DIR}.negatives_done")
 
+if STAGES.get('prepare_dhs', True):
+    TARGETS += expand(
+        f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed",
+        dhs_file=DHS_FILES,
+    )
+
 # training
-TARGETS.append(MODEL["checkpoint"])
+if STAGES.get('train', True):
+    TARGETS.append(MODEL["checkpoint"])
 
 # inference
-TARGETS += expand(
-    f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}.cov.txt",
-    sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
-)
+if STAGES.get('inference', True):
+    TARGETS += expand(
+        f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}.cov.txt",
+        sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
+    )
 
 if STAGES.get("benchmark", False):
     TARGETS += expand(

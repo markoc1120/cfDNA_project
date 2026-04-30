@@ -1,3 +1,6 @@
+import glob
+import os
+
 DATA = config['data']
 MATRIX = config['matrix']
 MODEL = config['model']
@@ -20,12 +23,18 @@ MATRIX_COLUMNS = MATRIX["columns"]
 MATRIX_ROWS = MATRIX["rows"]
 MATRIX_SHIFT = MATRIX["shift"]
 
+DHS_FILES = [
+    f.split('/')[-1].replace('.bed', '')
+    for f in glob.glob(f"{TRAIN_DHS_DIR}*.bed")
+    if '_wl' not in f.split('/')[-1]
+]
+
 GENERATE_BASE_MATRICES = STAGES.get("generate_base_matrices", True)
 
 COVERAGE_HANDLING = PREPROCESSING.get("coverage_handling", "downsample")
 _COVERAGE_SUFFIX_BY_MODE = {
-    "downsample": "downsampled",
-    "normalize": "normalized",
+    "downsample": "_downsampled",
+    "normalize": "_normalized",
     "none": "",
 }
 if COVERAGE_HANDLING not in _COVERAGE_SUFFIX_BY_MODE:
@@ -58,7 +67,9 @@ ACCESSIBILITY_DIR = DATA["accessibility_scores_dir"]
 FINAL_MATRICES_DIR = DATA["final_matrices_dir"]
 
 ACCESSIBILITY_STATS = ['pfe', 'lwps', 'ifs', 'fdi', 'ocf']
-BENCH_STATS = [MODEL['name']]
+BENCH_STATS = []
+if STAGES.get('train', True):
+    BENCH_STATS.append(MODEL['name'])
 
 if STAGES.get('accessibility_scores', False):
     BENCH_STATS.extend(ACCESSIBILITY_STATS)

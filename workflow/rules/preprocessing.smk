@@ -1,39 +1,7 @@
-import glob
-import os
-
 SAMPLES = [
     os.path.basename(os.path.dirname(p))
     for p in glob.glob(f"{INPUT_FRAGS_DIR}*/{FRAG_FILENAME}")
 ]
-DHS_FILES = [
-    f.split('/')[-1].replace('.bed', '')
-    for f in glob.glob(f"{TRAIN_DHS_DIR}*.bed")
-    if '_wl' not in f.split('/')[-1]
-]
-
-rule train_preprocess_dhs:
-    input:
-        dhs=f"{TRAIN_DHS_DIR}{{dhs_file}}.bed"
-    output:
-        dhs_preprocessed=temp(f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed")
-    params:
-        matrix_columns=MATRIX_COLUMNS
-    resources:
-        runtime=10
-    group: "prep_dhs"
-    script:
-        "../scripts/preprocess_dhs.py"
-
-rule train_downsample_dhs:
-    input:
-        dhs=expand(f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed", dhs_file=DHS_FILES)
-    output:
-        downsampled_dhs=expand(f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed", dhs_file=DHS_FILES)
-    resources:
-        runtime=5
-    group: "downsample_dhs"
-    script:
-        "../scripts/downsample_dhs.py"
 
 if GENERATE_BASE_MATRICES:
     rule train_preprocess_fragments:
@@ -112,7 +80,7 @@ if COVERAGE_HANDLING == "normalize":
 
 rule compute_bin_edges:
     input:
-        matrices=expand(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}.npy", sample=SAMPLES, dhs_file=DHS_FILES)
+        matrices=expand(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}.npy", sample=SAMPLES, dhs_file=DHS_FILES)
     output:
         bin_edges=BIN_EDGES_FILE
     params:
@@ -124,7 +92,7 @@ rule compute_bin_edges:
 
 rule rebin_matrices:
     input:
-        matrix = f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}.npy",
+        matrix = f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}.npy",
         bin_edges = BIN_EDGES_FILE
     output:
         temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy")

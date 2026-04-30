@@ -1,10 +1,10 @@
 # LWPS calculation
 rule calculate_lwps:
     input:
-        matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}.npy",
+        matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}.npy",
         config="confs/thesis.yaml"
     output:
-        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}_lwps.npy")
+        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}_lwps.npy")
     params:
         statistic="lwps"
     resources:
@@ -16,10 +16,10 @@ rule calculate_lwps:
 # FDI calculation
 rule calculate_fdi:
     input:
-        matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}.npy",
+        matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}.npy",
         config="confs/thesis.yaml"
     output:
-        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}_fdi.npz")
+        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}_fdi.npz")
     params:
         statistic="fdi"
     resources:
@@ -31,10 +31,10 @@ rule calculate_fdi:
 # IFS calculation
 rule calculate_ifs:
     input:
-        matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}.npy",
+        matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}.npy",
         config="confs/thesis.yaml"
     output:
-        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}_ifs.npz")
+        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}_ifs.npz")
     params:
         statistic="ifs"
     resources:
@@ -46,10 +46,10 @@ rule calculate_ifs:
 # PFE calculation
 rule calculate_pfe:
     input:
-        matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}.npy",
+        matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}.npy",
         config="confs/thesis.yaml"
     output:
-        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}_pfe.npz")
+        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}_pfe.npz")
     params:
         statistic="pfe"
     resources:
@@ -61,10 +61,10 @@ rule calculate_pfe:
 # OCF calculation
 rule calculate_ocf:
     input:
-        matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}.npy",
+        matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}.npy",
         config="confs/thesis.yaml"
     output:
-        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}_ocf.npy")
+        temp(f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}_ocf.npy")
     params:
         statistic="ocf"
     resources:

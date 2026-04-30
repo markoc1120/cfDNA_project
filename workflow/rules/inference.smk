@@ -92,9 +92,21 @@ if COVERAGE_HANDLING == "normalize":
         script:
             "../scripts/normalize_matrices.py"
 
+if COVERAGE_HANDLING == "none":
+      rule symlink_base_matrices:
+          input:
+              f"{INFERENCE_BASE_MATRICES_DIR}{{sample}}__{{dhs_file}}.npy"
+          output:
+              temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}.npy")
+          resources:
+              runtime=5
+          group: "symlink_matrices"
+          shell:
+              "ln -s $(realpath {input}) {output}"
+
 rule calculate_coverage_after_coverage_handling:
     input:
-        f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}.npy"
+        f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}.npy"
     output:
         f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}.cov.txt"
     resources:
@@ -105,7 +117,7 @@ rule calculate_coverage_after_coverage_handling:
 
 rule inference_rebin_matrices:
     input:
-        matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{COVERAGE_SUFFIX}.npy",
+        matrix=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}.npy",
         bin_edges=BIN_EDGES_FILE
     output:
         temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy")
