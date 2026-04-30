@@ -1,22 +1,26 @@
 # Stages to run (toggle on/off)
 stages:
+  generate_base_matrices: true
   generate_negatives: false
-  accessibility_scores: false
+  accessibility_scores: true
   benchmark: true
 
 
 # Data paths
 data:
-  input_frags_dir: "raw_data/DELFI1/"
-  inference_frags_dir: "raw_data/DELFI_LUCAS/"
+  input_frags_dir: "balanced_delfi_raw_data/DELFI1/"
+  inference_frags_dir: "balanced_delfi_raw_data/DELFI_LUCAS/"
   fragment_filename: "frag.tsv.gz"
 
-  training_dhs_dir: "raw_data/training_dhs/"
-  inference_dhs_dir: "raw_data/inference_dhs/"
-  hg_38_2bit_file: "raw_data/hg38.2bit"
+  training_dhs_dir: "balanced_delfi_raw_data/training_dhs/"
+  inference_dhs_dir: "balanced_delfi_raw_data/inference_dhs/"
+  hg_38_2bit_file: "balanced_delfi_raw_data/hg38.2bit"
 
-  training_metadata_path: "raw_data/meta/DELFI1_metadata.tsv"
-  inference_metadata_path: "raw_data/meta/DELFI_LUCAS_article_supp_table1.tsv"
+  training_metadata_path: "balanced_delfi_raw_data/meta/DELFI1_deduplicated.tsv"
+  inference_metadata_path: "balanced_delfi_raw_data/meta/DELFI_LUCAS_balanced.tsv"
+  
+  training_base_matrices: "balanced_delfi_raw_data/training_frags/"
+  inference_base_matrices: "balanced_delfi_raw_data/inference_frags/"
 
   # The below folders are automatically generated:
   training_output_dir: "data/training_frags/"
@@ -59,7 +63,7 @@ preprocessing:
   #   none -> feed raw matrices through (requires use_rebinned: true)
   coverage_handling: normalize
   # min_cov: 200000  # only used when coverage_handling is set to downsample
-  transforms: []
+  # transforms: []
   # # example 1: sum normalize
   # transforms:
   #   - name: "sum_normalization"
@@ -72,10 +76,10 @@ preprocessing:
   #   - name: "log_transform"
 
   # # example 3: sum normalize + log_transform + standardization
-  # transforms:
-  #   - name: "sum_normalization"
-  #   - name: "log_transform"
-  #   - name: "standardization"
+  transforms:
+    # - name: "sum_normalization"
+    - name: "log_transform"
+    # - name: "standardization"
 
 
 # Training hyperparameters

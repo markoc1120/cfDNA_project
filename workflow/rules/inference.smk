@@ -29,36 +29,37 @@ rule inference_preprocess_dhs:
     script:
         "../scripts/preprocess_dhs.py"
 
-rule inference_preprocess_fragments:
-    input:
-        fragment=f"{INFERENCE_FRAGS_DIR}{{sample}}/{FRAG_FILENAME}",
-        dhs=expand(
-            f"{INFERENCE_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed",
-            dhs_file=INFERENCE_DHS_FILES,
-        )
-    output:
-        raw=[
-            temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{dhs_file}.npy")
-            for dhs_file in INFERENCE_DHS_FILES
-        ],
-        cov=[
-            temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{dhs_file}.cov.txt")
-            for dhs_file in INFERENCE_DHS_FILES
-        ]
-    params:
-        matrix_rows=MATRIX_ROWS,
-        matrix_columns=MATRIX_COLUMNS,
-        matrix_shift=MATRIX_SHIFT
-    resources:
-        runtime=20
-    group: "prep_frag"
-    script:
-        "../scripts/preprocess_fragments.py"
+if GENERATE_BASE_MATRICES:
+    rule inference_preprocess_fragments:
+        input:
+            fragment=f"{INFERENCE_FRAGS_DIR}{{sample}}/{FRAG_FILENAME}",
+            dhs=expand(
+                f"{INFERENCE_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed",
+                dhs_file=INFERENCE_DHS_FILES,
+            )
+        output:
+            raw=[
+                f"{INFERENCE_BASE_MATRICES_DIR}{{sample}}__{dhs_file}.npy"
+                for dhs_file in INFERENCE_DHS_FILES
+            ],
+            cov=[
+                f"{INFERENCE_BASE_MATRICES_DIR}{{sample}}__{dhs_file}.cov.txt"
+                for dhs_file in INFERENCE_DHS_FILES
+            ]
+        params:
+            matrix_rows=MATRIX_ROWS,
+            matrix_columns=MATRIX_COLUMNS,
+            matrix_shift=MATRIX_SHIFT
+        resources:
+            runtime=20
+        group: "prep_frag"
+        script:
+            "../scripts/preprocess_fragments.py"
 
 if COVERAGE_HANDLING == "downsample":
     rule inference_downsample_matrices:
         input:
-            raw=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
+            raw=f"{INFERENCE_BASE_MATRICES_DIR}{{sample}}__{{dhs_file}}.npy",
             mincov=MIN_COV_FILE
         output:
             temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy")
@@ -71,7 +72,7 @@ if COVERAGE_HANDLING == "downsample":
 if COVERAGE_HANDLING == "normalize":
     rule inference_calculate_sample_coverage:
         input:
-            covs=expand(f"{INFERENCE_OUTPUT_DIR}{{{{sample}}}}__{{dhs_file}}.cov.txt", dhs_file=INFERENCE_DHS_FILES)
+            covs=expand(f"{INFERENCE_BASE_MATRICES_DIR}{{{{sample}}}}__{{dhs_file}}.cov.txt", dhs_file=INFERENCE_DHS_FILES)
         output:
             f"{INFERENCE_OUTPUT_DIR}{{sample}}_sample_coverage.txt"
         resources:
@@ -81,7 +82,7 @@ if COVERAGE_HANDLING == "normalize":
 
     rule inference_normalize_matrices:
         input:
-            raw=f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
+            raw=f"{INFERENCE_BASE_MATRICES_DIR}{{sample}}__{{dhs_file}}.npy",
             sample_cov=f"{INFERENCE_OUTPUT_DIR}{{sample}}_sample_coverage.txt"
         output:
             temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_normalized.npy")

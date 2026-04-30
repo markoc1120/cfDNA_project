@@ -3,6 +3,7 @@
 data/
 raw_data/
 previous_datas/
+balanced_delfi_raw_data/
 *.pt
 
 .snakemake*

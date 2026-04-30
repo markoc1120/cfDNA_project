@@ -12,12 +12,15 @@ FRAG_FILENAME = DATA["fragment_filename"]
 TRAINING_METADATA_PATH = DATA["training_metadata_path"]
 TRAIN_DHS_DIR = DATA["training_dhs_dir"]
 TRAIN_OUTPUT_DIR = DATA["training_output_dir"]
+TRAIN_BASE_MATRICES_DIR = DATA["training_base_matrices"]
 MIN_COV_FILE = DATA["training_min_coverage_file"]
 MIN_COV_OVERRIDE = PREPROCESSING.get("min_cov")
 BIN_EDGES_FILE = DATA["training_bin_edges_file"]
 MATRIX_COLUMNS = MATRIX["columns"]
 MATRIX_ROWS = MATRIX["rows"]
 MATRIX_SHIFT = MATRIX["shift"]
+
+GENERATE_BASE_MATRICES = STAGES.get("generate_base_matrices", True)
 
 COVERAGE_HANDLING = PREPROCESSING.get("coverage_handling", "downsample")
 _COVERAGE_SUFFIX_BY_MODE = {
@@ -37,6 +40,7 @@ INFERENCE_DHS_DIR = DATA["inference_dhs_dir"]
 INFERENCE_FRAGS_DIR = DATA["inference_frags_dir"]
 INFERENCE_METADATA_PATH = DATA["inference_metadata_path"]
 INFERENCE_OUTPUT_DIR = DATA["inference_output_dir"]
+INFERENCE_BASE_MATRICES_DIR = DATA["inference_base_matrices"]
 INFERENCE_USE_REBINNED = MODEL.get("use_rebinned", True)
 INFERENCE_OUTPUT_SUFFIX = "latent.npz" if MODEL["name"] == "vae" else "score.txt"
 

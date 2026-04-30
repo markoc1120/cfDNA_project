@@ -35,36 +35,37 @@ rule train_downsample_dhs:
     script:
         "../scripts/downsample_dhs.py"
 
-rule train_preprocess_fragments:
-    input:
-        fragment=f"{INPUT_FRAGS_DIR}{{sample}}/{FRAG_FILENAME}",
-        dhs=expand(
-            f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed",
-            dhs_file=DHS_FILES,
-        )
-    output:
-        raw=[
-            temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{dhs_file}.npy")
-            for dhs_file in DHS_FILES
-        ],
-        cov=[
-            temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{dhs_file}.cov.txt")
-            for dhs_file in DHS_FILES
-        ]
-    params:
-        matrix_rows=MATRIX_ROWS,
-        matrix_columns=MATRIX_COLUMNS,
-        matrix_shift=MATRIX_SHIFT
-    resources:
-        runtime=40
-    group: "prep_frag"
-    script:
-        "../scripts/preprocess_fragments.py"
+if GENERATE_BASE_MATRICES:
+    rule train_preprocess_fragments:
+        input:
+            fragment=f"{INPUT_FRAGS_DIR}{{sample}}/{FRAG_FILENAME}",
+            dhs=expand(
+                f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed",
+                dhs_file=DHS_FILES,
+            )
+        output:
+            raw=[
+                f"{TRAIN_BASE_MATRICES_DIR}{{sample}}__{dhs_file}.npy"
+                for dhs_file in DHS_FILES
+            ],
+            cov=[
+                f"{TRAIN_BASE_MATRICES_DIR}{{sample}}__{dhs_file}.cov.txt"
+                for dhs_file in DHS_FILES
+            ]
+        params:
+            matrix_rows=MATRIX_ROWS,
+            matrix_columns=MATRIX_COLUMNS,
+            matrix_shift=MATRIX_SHIFT
+        resources:
+            runtime=50
+        group: "prep_frag"
+        script:
+            "../scripts/preprocess_fragments.py"
 
 if COVERAGE_HANDLING == "downsample":
     rule calculate_min_coverage:
         input:
-            covs=expand(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.cov.txt", sample=SAMPLES, dhs_file=DHS_FILES)
+            covs=expand(f"{TRAIN_BASE_MATRICES_DIR}{{sample}}__{{dhs_file}}.cov.txt", sample=SAMPLES, dhs_file=DHS_FILES)
         output:
             MIN_COV_FILE
         params:
@@ -76,7 +77,7 @@ if COVERAGE_HANDLING == "downsample":
 
     rule train_downsample_matrices:
         input:
-            raw=f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
+            raw=f"{TRAIN_BASE_MATRICES_DIR}{{sample}}__{{dhs_file}}.npy",
             mincov=MIN_COV_FILE
         output:
             f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"
@@ -89,7 +90,7 @@ if COVERAGE_HANDLING == "downsample":
 if COVERAGE_HANDLING == "normalize":
     rule train_calculate_sample_coverage:
         input:
-            covs=expand(f"{TRAIN_OUTPUT_DIR}{{{{sample}}}}__{{dhs_file}}.cov.txt", dhs_file=DHS_FILES)
+            covs=expand(f"{TRAIN_BASE_MATRICES_DIR}{{{{sample}}}}__{{dhs_file}}.cov.txt", dhs_file=DHS_FILES)
         output:
             f"{TRAIN_OUTPUT_DIR}{{sample}}_sample_coverage.txt"
         resources:
@@ -99,7 +100,7 @@ if COVERAGE_HANDLING == "normalize":
 
     rule train_normalize_matrices:
         input:
-            raw=f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}.npy",
+            raw=f"{TRAIN_BASE_MATRICES_DIR}{{sample}}__{{dhs_file}}.npy",
             sample_cov=f"{TRAIN_OUTPUT_DIR}{{sample}}_sample_coverage.txt"
         output:
             f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_normalized.npy"
