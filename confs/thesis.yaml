@@ -18,7 +18,7 @@ data:
 
   training_metadata_path: "balanced_delfi_raw_data/meta/DELFI1_deduplicated.tsv"
   inference_metadata_path: "balanced_delfi_raw_data/meta/DELFI_LUCAS_balanced.tsv"
-  
+
   training_base_matrices: "balanced_delfi_raw_data/training_frags/"
   inference_base_matrices: "balanced_delfi_raw_data/inference_frags/"
 
