@@ -62,7 +62,8 @@ if COVERAGE_HANDLING == "normalize":
         output:
             f"{TRAIN_OUTPUT_DIR}{{sample}}_sample_coverage.txt"
         resources:
-            runtime=5
+            runtime=2
+        group: "calc_sample_coverage"
         script:
             "../scripts/calculate_sample_coverage.py"
 

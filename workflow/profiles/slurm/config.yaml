@@ -22,6 +22,7 @@ group-components:
   prep_frag: 50
   symlink_matrices: 50
   downsample_matrices: 50
+  calc_sample_coverage: 50
   normalize_matrices: 50
   coverage_handling: 50
   rebin_matrices: 50
