@@ -21,4 +21,3 @@ rule train_downsample_dhs:
     group: "downsample_dhs"
     script:
         "../scripts/downsample_dhs.py"
-
