@@ -38,7 +38,7 @@ if STAGES.get("generate_negatives", False):
 
 if STAGES.get('prepare_dhs', True):
     TARGETS += expand(
-        f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed",
+        f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed",
         dhs_file=DHS_FILES,
     )
 

@@ -8,7 +8,7 @@ if GENERATE_BASE_MATRICES:
         input:
             fragment=f"{INPUT_FRAGS_DIR}{{sample}}/{FRAG_FILENAME}",
             dhs=expand(
-                f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}_downsampled.bed",
+                f"{TRAIN_DHS_DIR}{{dhs_file}}_wl{MATRIX_COLUMNS}.bed",
                 dhs_file=DHS_FILES,
             )
         output:
@@ -48,7 +48,7 @@ if COVERAGE_HANDLING == "downsample":
             raw=f"{TRAIN_BASE_MATRICES_DIR}{{sample}}__{{dhs_file}}.npy",
             mincov=MIN_COV_FILE
         output:
-            temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy")
+            f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy"
         resources:
             runtime=5
         group: "downsample_matrices"
@@ -72,7 +72,7 @@ if COVERAGE_HANDLING == "normalize":
             raw=f"{TRAIN_BASE_MATRICES_DIR}{{sample}}__{{dhs_file}}.npy",
             sample_cov=f"{TRAIN_OUTPUT_DIR}{{sample}}_sample_coverage.txt"
         output:
-            temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_normalized.npy")
+            f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_normalized.npy"
         resources:
             runtime=5
         group: "normalize_matrices"
@@ -96,7 +96,7 @@ rule rebin_matrices:
         matrix = f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}{COVERAGE_SUFFIX}.npy",
         bin_edges = BIN_EDGES_FILE
     output:
-        temp(f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy")
+        f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy"
     resources:
         runtime=2
     group: "rebin_matrices"
