@@ -58,7 +58,7 @@ if INFERENCE_USE_REBINNED:
 elif COVERAGE_HANDLING == 'none':
     raise ValueError("coverage_handling='none' requires use_rebinned=true")
 else:
-    INPUT_TYPE = COVERAGE_SUFFIX
+    INPUT_TYPE = COVERAGE_SUFFIX[1:] if COVERAGE_SUFFIX.startswith("_") else COVERAGE_SUFFIX
 
 # accessibility score
 ACCESSIBILITY_DIR = DATA["accessibility_scores_dir"]
