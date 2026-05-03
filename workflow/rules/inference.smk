@@ -51,7 +51,7 @@ if GENERATE_BASE_MATRICES:
             matrix_columns=MATRIX_COLUMNS,
             matrix_shift=MATRIX_SHIFT
         resources:
-            runtime=20
+            runtime=50
         group: "prep_frag"
         script:
             "../scripts/preprocess_fragments.py"
