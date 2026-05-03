@@ -4,12 +4,11 @@ cores: 2
 use-conda: true
 default-resources:
   slurm_account: Fragmentomics
+  slurm_extra: "'--exclude=cn-1055,cn-1012'"
   runtime: 30
   mem_mb_per_cpu: 1000
   disk_mb: 1000
 set-resources:
-  compute_bin_edges:
-    mem_mb_per_cpu: 14000
   build_feature_matrices:
     mem_mb_per_cpu: 8000
   generate_negative_dhs:

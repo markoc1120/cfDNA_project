@@ -41,17 +41,21 @@ def compute_bin_edges(matrix_paths: list[str], matrix_rows: int, divisor: int = 
             print(f'{i}/{total} (row_sums)')
         row_sums += np.load(path).sum(axis=1)
 
-    lengths_expanded = np.repeat(np.arange(matrix_rows), row_sums.astype(np.int64))
+    counts = row_sums.astype(np.int64)
+    cum = np.cumsum(counts)
+    n = int(cum[-1])
 
     start, end = 4, 13
     for multiplier in range(start, end):
         q = multiplier * divisor
-        _, edges = pd.qcut(lengths_expanded, q=q, retbins=True, duplicates='drop')
-        n = len(edges) - 1
-        if n % divisor == 0:
+        targets = np.linspace(0, n, q + 1)
+        edges = np.searchsorted(cum, targets, side='left').astype(float)
+        edges = np.unique(edges)
+        nbins = len(edges) - 1
+        if nbins % divisor == 0:
             edges[0] = 0
             edges[-1] = matrix_rows
-            print(f'bin edges ({n} bins, q={q}): {edges}')
+            print(f'bin edges ({nbins} bins, q={q}): {edges}')
             return edges
 
     raise RuntimeError(
