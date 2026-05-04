@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Subset
 
-from .dataset import MatrixDataset, build_pairs, split_pairs_torch
+from .dataset import MatrixDataset, apply_coverage_filter, build_pairs, split_pairs_torch
 
 logger = logging.getLogger(__name__)
 
@@ -45,11 +45,29 @@ def get_dataloaders(
     valid_size: int = 10,
     batch_size: int = 32,
     seed: int = 42,
-    suffix: str = 'downsampled',
+    suffix: str = '_downsampled',
     is_tiny: bool = False,
     only_positive: bool = False,
+    cov_dir: str | None = None,
+    dhs_files: list[str] | None = None,
+    coverage_threshold: float | None = None,
+    max_sample_loss: float | None = None,
 ):
     pairs = build_pairs(output_dir, suffix=suffix, only_positive=only_positive)
+    if (
+        cov_dir is not None
+        and dhs_files is not None
+        and coverage_threshold is not None
+        and max_sample_loss is not None
+    ):
+        pairs = apply_coverage_filter(
+            pairs,
+            dhs_files=dhs_files,
+            cov_dir=cov_dir,
+            coverage_threshold=coverage_threshold,
+            max_sample_loss=max_sample_loss,
+        )
+
     train_pairs, valid_pairs, test_pairs = split_pairs_torch(
         pairs, train_size=train_size, valid_size=valid_size, seed=seed
     )

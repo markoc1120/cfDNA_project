@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 
 
 def downsample_matrix(matrix: np.ndarray, target_sum: int) -> np.ndarray:

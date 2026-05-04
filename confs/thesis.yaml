@@ -6,9 +6,8 @@ stages:
   collect_data: true
   train: true
   inference: true
-  accessibility_scores: true
+  accessibility_scores: false
   benchmark: true
-
 
 # Data paths
 data:
@@ -65,8 +64,9 @@ preprocessing:
   #   downsample -> multinomial-downsample each matrix to MIN_COV_FILE (or min_cov override)
   #   normalize -> per-sample counts per million (CPM) scaling: matrix * 1e6 / sample_total
   #   none -> feed raw matrices through (requires use_rebinned: true)
-  coverage_handling: normalize
-  # min_cov: 200000  # only used when coverage_handling is set to downsample
+  coverage_handling: downsample
+  min_cov: 100000  # only used when coverage_handling is set to downsample
+  max_sample_loss: 0.2  # only used when coverage_handling is set to downsample
   # transforms: []
   # # example 1: sum normalize
   # transforms:
@@ -80,9 +80,9 @@ preprocessing:
   #   - name: "log_transform"
 
   # # example 3: sum normalize + log_transform + standardization
-  transforms:
+  # transforms:
     # - name: "sum_normalization"
-    - name: "log_transform"
+    # - name: "log_transform"
     # - name: "standardization"
 
 
@@ -108,7 +108,7 @@ lwps:
   window_size: 120
   lower_threshold: 120
   upper_threshold: 180
-  matrix_shift: 250
+  matrix_shift: 0
 
 fdi:
   window_size: 250
@@ -116,19 +116,19 @@ fdi:
   endpoint_window: 10
   x: 0.9
   y: 500
-  matrix_shift: 250
+  matrix_shift: 0
 
 ifs:
   window_size: 125
-  matrix_shift: 250
+  matrix_shift: 0
 
 pfe:
   window_size: 1500
   min_length: 100
   max_length: 300
-  matrix_shift: 250
+  matrix_shift: 0
 
 ocf:
   window_half: 10
   center_offset: 60
-  matrix_shift: 250
+  matrix_shift: 0

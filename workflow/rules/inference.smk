@@ -13,7 +13,7 @@ INFERENCE_DHS_FILES = [
 
 
 def inference_input(wildcards):
-    return f"{INFERENCE_OUTPUT_DIR}{wildcards.sample}__{wildcards.dhs_file}_{INPUT_TYPE}.npy"
+    return f"{INFERENCE_OUTPUT_DIR}{wildcards.sample}__{wildcards.dhs_file}{INPUT_TYPE}.npy"
 
 
 rule inference_preprocess_dhs:

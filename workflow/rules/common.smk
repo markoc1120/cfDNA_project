@@ -54,11 +54,11 @@ INFERENCE_USE_REBINNED = MODEL.get("use_rebinned", True)
 INFERENCE_OUTPUT_SUFFIX = "latent.npz" if MODEL["name"] == "vae" else "score.txt"
 
 if INFERENCE_USE_REBINNED:
-    INPUT_TYPE = 'rebinned'
+    INPUT_TYPE = '_rebinned'
 elif COVERAGE_HANDLING == 'none':
     raise ValueError("coverage_handling='none' requires use_rebinned=true")
 else:
-    INPUT_TYPE = COVERAGE_SUFFIX[1:] if COVERAGE_SUFFIX.startswith("_") else COVERAGE_SUFFIX
+    INPUT_TYPE = COVERAGE_SUFFIX
 
 # accessibility score
 ACCESSIBILITY_DIR = DATA["accessibility_scores_dir"]

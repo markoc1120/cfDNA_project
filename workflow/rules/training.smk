@@ -1,7 +1,7 @@
 rule train_model:
     input:
         matrices=expand(
-            f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}_{INPUT_TYPE}.npy",
+            f"{TRAIN_OUTPUT_DIR}{{sample}}__{{dhs_file}}{INPUT_TYPE}.npy",
             sample=SAMPLES, dhs_file=DHS_FILES,
         ),
     params:

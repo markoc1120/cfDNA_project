@@ -1,4 +1,6 @@
+import glob
 import logging
+import os
 
 import torch
 import torch.nn as nn
@@ -37,6 +39,32 @@ if 'snakemake' in globals():
     transform_fn = build_transform_pipeline(transform_configs) if transform_configs else None
 
     model_name = model_cfg['name']
+
+    # apply_coverage_filter (downsample mode only)
+    qc_kwargs: dict = {}
+    if preproc_cfg.get('coverage_handling', 'downsample') == 'downsample':
+        coverage_threshold = preproc_cfg.get('min_cov')
+        if coverage_threshold is None:
+            with open(data_cfg['training_min_coverage_file']) as f:
+                coverage_threshold = float(f.read().strip())
+        else:
+            coverage_threshold = float(coverage_threshold)
+
+        dhs_dir = data_cfg['training_dhs_dir']
+        dhs_files = [
+            os.path.basename(f).removesuffix('.bed')
+            for f in glob.glob(f'{dhs_dir}*.bed')
+            if '_wl' not in os.path.basename(f)
+            and not os.path.basename(f).endswith('_negative.bed')
+        ]
+
+        qc_kwargs = dict(
+            cov_dir=data_cfg['training_base_matrices'],
+            dhs_files=dhs_files,
+            coverage_threshold=coverage_threshold,
+            max_sample_loss=preproc_cfg.get('max_sample_loss', 0.2),
+        )
+
     # get dataloaders
     train_loader, valid_loader, test_loader = get_dataloaders(
         output_dir=data_cfg['training_output_dir'],
@@ -48,6 +76,7 @@ if 'snakemake' in globals():
         seed=seed,
         suffix=snakemake.params.input_type,
         only_positive=(model_name == 'vae'),
+        **qc_kwargs,
     )
     train_mean = getattr(train_loader.dataset, 'train_mean', None)
     train_std = getattr(train_loader.dataset, 'train_std', None)
@@ -116,7 +145,7 @@ if 'snakemake' in globals():
         scheduler=scheduler,
         device=device,
     )
-    logger.info(f'Training complete. Best checkpoint saved to: {checkpoint_path}')
+    print(f'Training complete. Best checkpoint saved to: {checkpoint_path}')
 
     # ROC is only meaningful for supervised models (CNN/MLP), not VAE
     if not is_vae:
@@ -131,9 +160,9 @@ if 'snakemake' in globals():
 
     history_path = model_cfg['checkpoint'].replace('.pt', '.history.pt')
     torch.save(history, history_path)
-    logger.info(f'Training history saved to: {history_path}')
+    print(f'Training history saved to: {history_path}')
 
     if train_mean is not None and train_std is not None:
         stats_path = model_cfg['checkpoint'].replace('.pt', '.stats.pt')
         torch.save({'train_mean': train_mean, 'train_std': train_std}, stats_path)
-        logger.info(f'Standardization stats saved to: {stats_path}')
+        print(f'Standardization stats saved to: {stats_path}')
