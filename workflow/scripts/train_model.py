@@ -1,4 +1,5 @@
 import glob
+import json
 import logging
 import os
 
@@ -66,6 +67,7 @@ if 'snakemake' in globals():
         )
 
     # get dataloaders
+    qc_out: dict = {}
     train_loader, valid_loader, test_loader = get_dataloaders(
         output_dir=data_cfg['training_output_dir'],
         transform_fn=transform_fn,
@@ -76,8 +78,23 @@ if 'snakemake' in globals():
         seed=seed,
         suffix=snakemake.params.input_type,
         only_positive=(model_name == 'vae'),
+        qc_out=qc_out,
         **qc_kwargs,
     )
+
+    dropped_dhs_path = model_cfg['checkpoint'].replace('.pt', '.dropped_dhs.json')
+    os.makedirs(os.path.dirname(dropped_dhs_path), exist_ok=True)
+    with open(dropped_dhs_path, 'w') as f:
+        json.dump(
+            {
+                'dropped_dhs': qc_out.get('dropped_dhs', []),
+                'dropped_sids': qc_out.get('dropped_sids', []),
+                'coverage_threshold': qc_out.get('coverage_threshold'),
+                'max_sample_loss': qc_out.get('max_sample_loss'),
+            },
+            f,
+        )
+    print(f'Dropped DHS list saved to: {dropped_dhs_path}')
     train_mean = getattr(train_loader.dataset, 'train_mean', None)
     train_std = getattr(train_loader.dataset, 'train_std', None)
 

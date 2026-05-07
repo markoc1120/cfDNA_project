@@ -52,6 +52,7 @@ def get_dataloaders(
     dhs_files: list[str] | None = None,
     coverage_threshold: float | None = None,
     max_sample_loss: float | None = None,
+    qc_out: dict | None = None,
 ):
     pairs = build_pairs(output_dir, suffix=suffix, only_positive=only_positive)
     if (
@@ -60,13 +61,18 @@ def get_dataloaders(
         and coverage_threshold is not None
         and max_sample_loss is not None
     ):
-        pairs = apply_coverage_filter(
+        pairs, dropped_dhs, dropped_sids = apply_coverage_filter(
             pairs,
             dhs_files=dhs_files,
             cov_dir=cov_dir,
             coverage_threshold=coverage_threshold,
             max_sample_loss=max_sample_loss,
         )
+        if qc_out is not None:
+            qc_out['dropped_dhs'] = dropped_dhs
+            qc_out['dropped_sids'] = dropped_sids
+            qc_out['coverage_threshold'] = coverage_threshold
+            qc_out['max_sample_loss'] = max_sample_loss
 
     train_pairs, valid_pairs, test_pairs = split_pairs_torch(
         pairs, train_size=train_size, valid_size=valid_size, seed=seed

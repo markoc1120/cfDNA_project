@@ -89,7 +89,6 @@ def apply_coverage_filter(
     coverage_threshold: float,
     max_sample_loss: float,
 ):
-    print(dhs_files)
     unique_sids = sorted({p['sid'] for p in pairs})
     sid_to_row = {sid: i for i, sid in enumerate(unique_sids)}
     dhs_to_col = {dhs: j for j, dhs in enumerate(dhs_files)}
@@ -134,7 +133,8 @@ def apply_coverage_filter(
         f'dropped {len(dropped_sids)}/{n_samples} samples below {coverage_threshold:g}'
     )
 
-    return [p for p in pairs if p['sid'] in kept_sids and p['dhs'] in kept_dhs]
+    kept_pairs = [p for p in pairs if p['sid'] in kept_sids and p['dhs'] in kept_dhs]
+    return kept_pairs, dropped_dhs, dropped_sids
 
 
 class MatrixDataset(Dataset):

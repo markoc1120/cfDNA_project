@@ -32,6 +32,7 @@ if STAGES.get("train", True):
             f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{INFERENCE_OUTPUT_SUFFIX}",
             sample=INFERENCE_SAMPLES, dhs_file=INFERENCE_DHS_FILES,
         ),
+        dropped_dhs=MODEL["checkpoint"].replace(".pt", ".dropped_dhs.json"),
     )
 
 

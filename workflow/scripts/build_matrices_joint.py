@@ -1,3 +1,4 @@
+import json
 import os
 
 import numpy as np
@@ -14,7 +15,10 @@ STATS_KEYS = {
 
 def parse_metadata(file_path: str) -> dict[str, str]:
     df = pd.read_csv(file_path, sep='\t', dtype=str)
-    return {row['Patient']: row['Patient type'] for _, row in df.iterrows()}
+    return {
+        row['Patient']: 'healthy' if row['Patient type'].lower() == 'healthy' else 'cancer'
+        for _, row in df.iterrows()
+    }
 
 
 def parse_sid_dhs(path: str, dhs_files: list[str]):
@@ -105,6 +109,19 @@ if 'snakemake' in globals():
     model = cfg['model']['name']
 
     dhs_files = list(snakemake.params.dhs_files)
+
+    # dropping the same DHSs which were excluded in training
+    dropped_dhs_path = getattr(snakemake.input, 'dropped_dhs', None)
+    if dropped_dhs_path:
+        with open(dropped_dhs_path) as f:
+            dropped_set = set(json.load(f).get('dropped_dhs', []))
+        if dropped_set:
+            before = len(dhs_files)
+            dhs_files = [d for d in dhs_files if d not in dropped_set]
+            print(
+                f'Filtered out {before - len(dhs_files)} DHS dropped during training '
+                f'(via {dropped_dhs_path}); {len(dhs_files)} remain'
+            )
 
     os.makedirs(final_dir, exist_ok=True)
     metadata_map = parse_metadata(metadata_path)

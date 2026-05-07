@@ -8,6 +8,7 @@ rule train_model:
         input_type=INPUT_TYPE,
     output:
         checkpoint=MODEL["checkpoint"],
+        dropped_dhs=MODEL["checkpoint"].replace(".pt", ".dropped_dhs.json"),
     resources:
         runtime=600
     script:
