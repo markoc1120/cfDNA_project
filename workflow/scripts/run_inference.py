@@ -27,6 +27,7 @@ if 'snakemake' in globals():
         x = transform_fn(x, **transform_kwargs)
     x = x.unsqueeze(0).unsqueeze(0)
 
+    model_params = snakemake.config.get('model', {}).get('params', {})
     # Model instantiation depends on type
     h, w = x.shape[2], x.shape[3]
     if model_type == 'vae':
@@ -34,12 +35,13 @@ if 'snakemake' in globals():
             model_type,
             input_height=h,
             input_width=w,
+            **model_params,
         )
     elif model_type == 'mlp':
         n_inputs = h + w
-        model = get_model(model_type, n_inputs=n_inputs)
+        model = get_model(model_type, n_inputs=n_inputs, **model_params)
     else:
-        model = get_model(model_type)
+        model = get_model(model_type, **model_params)
 
     model.load_state_dict(torch.load(checkpoint, weights_only=True))
     model.eval()
