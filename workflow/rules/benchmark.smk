@@ -26,7 +26,7 @@ if STAGES.get("accessibility_scores", False):
 
 model_inputs = {}
 
-if STAGES.get("train", True):
+if STAGES.get("inference", True):
     model_inputs = dict(
         model_inputs=expand(
             f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}_{INFERENCE_OUTPUT_SUFFIX}",
@@ -52,4 +52,4 @@ rule build_feature_matrices:
     resources:
         runtime=30
     script:
-        "../scripts/build_matrices_joint.py"
+        "../scripts/build_matrices_joint_without_pca.py"

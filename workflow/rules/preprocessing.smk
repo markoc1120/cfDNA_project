@@ -87,7 +87,7 @@ rule compute_bin_edges:
     params:
         matrix_rows=MATRIX_ROWS,
     resources:
-        runtime=30
+        runtime=300
     script:
         "../scripts/compute_bin_edges.py"
 

@@ -12,7 +12,7 @@ stages:
 # Data paths
 data:
   input_frags_dir: "mlp_cnn_part_of_delfi1_training_raw_data/training/"
-  inference_frags_dir: "vae_full_delfi1_training_raw_data/DELFI_LUCAS/"
+  inference_frags_dir: "vae_part_of_delfi1_training_raw_data/inference/"
   fragment_filename: "frag.tsv.gz"
 
   training_dhs_dir: "mlp_cnn_part_of_delfi1_training_raw_data/lymphoid_dhs/"
@@ -20,20 +20,20 @@ data:
   hg_38_2bit_file: "vae_full_delfi1_training_raw_data/hg38.2bit"
 
   training_metadata_path: "mlp_cnn_part_of_delfi1_training_raw_data/meta/training.tsv"
-  inference_metadata_path: "vae_full_delfi1_training_raw_data/meta/DELFI_LUCAS_balanced.tsv"
+  inference_metadata_path: "vae_part_of_delfi1_training_raw_data/meta/inference.tsv"
 
   training_base_matrices: "mlp_cnn_full_delfi1_training_raw_data/lymphoid_training_frags/"
-  inference_base_matrices: "vae_full_delfi1_training_raw_data/inference_frags/"
+  inference_base_matrices: "vae_full_delfi1_training_raw_data/training_frags/"
 
   # The below folders are automatically generated:
-  training_output_dir: "vae_across_cohort_only_pos_lymphoid_72x192/training_frags/"
-  training_min_coverage_file: "vae_across_cohort_only_pos_lymphoid_72x192/training_frags/min_coverage.txt"
-  training_bin_edges_file: "vae_across_cohort_only_pos_lymphoid_72x192/training_frags/bin_edges.npy"
+  training_output_dir: "vae_part_of_delfi1_only_pos_lymphoid_72x192/training_frags/"
+  training_min_coverage_file: "vae_part_of_delfi1_only_pos_lymphoid_72x192/training_frags/min_coverage.txt"
+  training_bin_edges_file: "vae_part_of_delfi1_only_pos_lymphoid_72x192/training_frags/bin_edges.npy"
 
-  inference_output_dir: "vae_across_cohort_only_pos_lymphoid_72x192/inference/"
+  inference_output_dir: "vae_part_of_delfi1_only_pos_lymphoid_72x192/inference/"
 
-  accessibility_scores_dir: "vae_across_cohort_only_pos_lymphoid_72x192/accessibility_scores/"
-  final_matrices_dir: "vae_across_cohort_only_pos_lymphoid_72x192/final_matrices_without_pca/"
+  accessibility_scores_dir: "vae_part_of_delfi1_only_pos_lymphoid_72x192/accessibility_scores/"
+  final_matrices_dir: "vae_part_of_delfi1_only_pos_lymphoid_72x192/final_matrices/"
 
 
 # Matrix

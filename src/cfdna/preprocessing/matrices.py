@@ -44,7 +44,7 @@ def compute_bin_edges(matrix_paths: list[str], matrix_rows: int, divisor: int = 
     cum = np.cumsum(counts)
     n = int(cum[-1])
 
-    start, end = 4, 13
+    start, end = 12, 16
     for multiplier in range(start, end):
         q = multiplier * divisor
         targets = np.linspace(0, n, q + 1)

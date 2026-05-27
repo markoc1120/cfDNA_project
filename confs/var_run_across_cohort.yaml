@@ -3,37 +3,37 @@ stages:
   generate_base_matrices: false
   generate_negatives: false
   prepare_dhs: true
-  collect_data: false
+  collect_data: true
   train: false
   inference: true
-  accessibility_scores: true
+  accessibility_scores: false
   benchmark: true
 
 # Data paths
 data:
-  input_frags_dir: "mlp_cnn_part_of_delfi1_training_raw_data/training/"
+  input_frags_dir: "vae_part_of_delfi1_training_raw_data/training/"
   inference_frags_dir: "vae_full_delfi1_training_raw_data/DELFI_LUCAS/"
   fragment_filename: "frag.tsv.gz"
 
-  training_dhs_dir: "mlp_cnn_part_of_delfi1_training_raw_data/lymphoid_dhs/"
+  training_dhs_dir: "vae_full_delfi1_training_raw_data/training_dhs/"
   inference_dhs_dir: "vae_full_delfi1_training_raw_data/inference_dhs/"
   hg_38_2bit_file: "vae_full_delfi1_training_raw_data/hg38.2bit"
 
-  training_metadata_path: "mlp_cnn_part_of_delfi1_training_raw_data/meta/training.tsv"
+  training_metadata_path: "vae_part_of_delfi1_training_raw_data/meta/training.tsv"
   inference_metadata_path: "vae_full_delfi1_training_raw_data/meta/DELFI_LUCAS_balanced.tsv"
 
-  training_base_matrices: "mlp_cnn_full_delfi1_training_raw_data/lymphoid_training_frags/"
+  training_base_matrices: "vae_full_delfi1_training_raw_data/training_frags/"
   inference_base_matrices: "vae_full_delfi1_training_raw_data/inference_frags/"
 
   # The below folders are automatically generated:
-  training_output_dir: "vae_across_cohort_only_pos_lymphoid_72x192/training_frags/"
-  training_min_coverage_file: "vae_across_cohort_only_pos_lymphoid_72x192/training_frags/min_coverage.txt"
-  training_bin_edges_file: "vae_across_cohort_only_pos_lymphoid_72x192/training_frags/bin_edges.npy"
+  training_output_dir: "vae_across_cohort_training_result/training_frags/"
+  training_min_coverage_file: "vae_across_cohort_training_result/training_frags/min_coverage.txt"
+  training_bin_edges_file: "vae_across_cohort_training_result/training_frags/bin_edges.npy"
 
-  inference_output_dir: "vae_across_cohort_only_pos_lymphoid_72x192/inference/"
+  inference_output_dir: "vae_across_cohort_training_result/inference/"
 
-  accessibility_scores_dir: "vae_across_cohort_only_pos_lymphoid_72x192/accessibility_scores/"
-  final_matrices_dir: "vae_across_cohort_only_pos_lymphoid_72x192/final_matrices_without_pca/"
+  accessibility_scores_dir: "vae_across_cohort_training_result/accessibility_scores/"
+  final_matrices_dir: "vae_across_cohort_training_result/final_matrices/"
 
 
 # Matrix
@@ -52,9 +52,9 @@ negative_dhs:
 # Model (swap by changing name + checkpoint)
 model:
   name: "vae"
-  checkpoint: "models/vae_only_pos_lymphoid_within_cohort_72x192.pt"
+  checkpoint: "models/vae_part_of_delfi1_training.pt"
   use_rebinned: true
-  params: {"latent_dim": 2, "base_channels": 16}
+  params: {}
 
 
 # Preprocessing transforms (applied in order)
@@ -95,9 +95,8 @@ training:
   n_epochs: 200
   patience: 10
   optimizer: "adam"
-  learning_rate: 0.00368
+  learning_rate: 0.001
   scheduler: "reduce_on_plateau"
-  beta: 0.1
   scheduler_params:
     mode: "max"
     patience: 3

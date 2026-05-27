@@ -68,7 +68,7 @@ FINAL_MATRICES_DIR = DATA["final_matrices_dir"]
 
 ACCESSIBILITY_STATS = ['pfe', 'lwps', 'ifs', 'fdi', 'ocf']
 BENCH_STATS = []
-if STAGES.get('train', True):
+if STAGES.get('inference', True):
     BENCH_STATS.append(MODEL['name'])
 
 if STAGES.get('accessibility_scores', False):

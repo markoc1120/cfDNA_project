@@ -33,7 +33,7 @@ data:
   inference_output_dir: "vae_across_cohort_only_pos_lymphoid_72x192/inference/"
 
   accessibility_scores_dir: "vae_across_cohort_only_pos_lymphoid_72x192/accessibility_scores/"
-  final_matrices_dir: "vae_across_cohort_only_pos_lymphoid_72x192/final_matrices_without_pca/"
+  final_matrices_dir: "vae_across_cohort_only_pos_lymphoid_72x192/final_matrices/"
 
 
 # Matrix
