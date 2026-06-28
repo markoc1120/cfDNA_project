@@ -51,7 +51,7 @@ INFERENCE_METADATA_PATH = DATA["inference_metadata_path"]
 INFERENCE_OUTPUT_DIR = DATA["inference_output_dir"]
 INFERENCE_BASE_MATRICES_DIR = DATA["inference_base_matrices"]
 INFERENCE_USE_REBINNED = MODEL.get("use_rebinned", True)
-INFERENCE_OUTPUT_SUFFIX = "latent.npz" if MODEL["name"] == "vae" else "score.txt"
+INFERENCE_OUTPUT_SUFFIX = "latent.npz" if MODEL["name"] in ("vae", "ijepa") else "score.txt"
 
 if INFERENCE_USE_REBINNED:
     INPUT_TYPE = '_rebinned'

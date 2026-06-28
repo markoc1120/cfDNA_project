@@ -17,7 +17,7 @@ if 'snakemake' in globals():
     transform_kwargs = {}
     if any(tc['name'] == 'standardization' for tc in transform_configs):
         stats_path = checkpoint.replace('.pt', '.stats.pt')
-        stats = torch.load(stats_path, weights_only=True)
+        stats = torch.load(stats_path, weights_only=True, map_location='cpu')
         transform_kwargs['train_mean'] = stats['train_mean']
         transform_kwargs['train_std'] = stats['train_std']
 
@@ -43,7 +43,7 @@ if 'snakemake' in globals():
     else:
         model = get_model(model_type, **model_params)
 
-    model.load_state_dict(torch.load(checkpoint, weights_only=True))
+    model.load_state_dict(torch.load(checkpoint, weights_only=True, map_location='cpu'))
     model.eval()
 
     with torch.no_grad():
@@ -54,6 +54,9 @@ if 'snakemake' in globals():
                 mu=vae_output.mu.squeeze(0).cpu().numpy(),
                 logvar=vae_output.logvar.squeeze(0).cpu().numpy(),
             )
+        elif model_type == 'ijepa':
+            embedding = model.embed(x)
+            np.savez(output_path, embedding=embedding.squeeze(0).cpu().numpy())
         else:
             logit = model(x).item()
             score = torch.sigmoid(torch.tensor(logit)).item()

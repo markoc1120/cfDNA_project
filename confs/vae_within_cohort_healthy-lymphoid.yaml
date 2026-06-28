@@ -96,7 +96,7 @@ training:
   patience: 20
   optimizer: "adam"
   beta: 0.1
-  learning_rate: 0.00495761
+  learning_rate: 0.005
   scheduler: "reduce_on_plateau"
   scheduler_params:
     mode: "max"

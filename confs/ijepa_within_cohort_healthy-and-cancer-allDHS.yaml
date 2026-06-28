@@ -1,3 +1,8 @@
+# I-JEPA variant (patchify + ViT) — EXTRA setup.
+# Full DELFI1 (~500) training + independent DELFI_LUCAS inference. This is the config to run the
+# hyperparameter search on: `uv run python train_ssl.py --config confs/ijepa_extra.yaml --n-trials 30`.
+# Then paste the winning model.params into this + the within-cohort config before inference.
+
 # Stages to run (toggle on/off)
 stages:
   generate_base_matrices: false
@@ -9,13 +14,13 @@ stages:
   accessibility_scores: false
   benchmark: true
 
-
 # Data paths
 data:
   input_frags_dir: "vae_full_delfi1_training_raw_data/DELFI1/"
   inference_frags_dir: "vae_part_of_delfi1_training_raw_data/inference/"
   fragment_filename: "frag.tsv.gz"
 
+  # training_dhs_dir: "vae_full_delfi1_training_raw_data/lymphoid_dhs/"
   training_dhs_dir: "vae_full_delfi1_training_raw_data/training_dhs/"
   inference_dhs_dir: "vae_full_delfi1_training_raw_data/inference_dhs/"
   hg_38_2bit_file: "vae_full_delfi1_training_raw_data/hg38.2bit"
@@ -23,17 +28,18 @@ data:
   training_metadata_path: "vae_full_delfi1_training_raw_data/meta/DELFI1_deduplicated.tsv"
   inference_metadata_path: "vae_part_of_delfi1_training_raw_data/meta/inference.tsv"
 
+  # training_base_matrices: "vae_full_delfi1_training_raw_data/lymphoid_training_frags/"
   training_base_matrices: "vae_full_delfi1_training_raw_data/training_frags/"
   inference_base_matrices: "vae_full_delfi1_training_raw_data/training_frags/"
 
-  # healthy-lymphoid
-  training_output_dir: "ijepa_extra_72x192/healthy_lymphoid_within_cohort_frags/"
+  # healthy-and-cancer-allDHS
+  training_output_dir: "ijepa_extra_72x192/training_within_cohort_frags/"
   training_min_coverage_file: "ijepa_extra_72x192/training_frags/min_coverage.txt"
   training_bin_edges_file: "ijepa_extra_72x192/training_frags/bin_edges.npy"
 
-  inference_output_dir: "vae_within_cohort_72x192_healthy_lymphoid/inference/"
-  accessibility_scores_dir: "vae_within_cohort_72x192_healthy_lymphoid/accessibility_scores/"
-  final_matrices_dir: "vae_within_cohort_72x192_healthy_lymphoid/final_matrices_without_pca/"
+  inference_output_dir: "ijepa_within_cohort_72x192_healthy_cancer_all/inference/"
+  accessibility_scores_dir: "ijepa_within_cohort_72x192_healthy_cancer_all/accessibility_scores/"
+  final_matrices_dir: "ijepa_within_cohort_72x192_healthy_cancer_all/final_matrices_without_pca/"
 
 
 # Matrix
@@ -49,41 +55,20 @@ negative_dhs:
   n_quantile_bins: 20
   max_tries_multiplier: 50
 
-# Model (swap by changing name + checkpoint)
+# Model
 model:
-  name: "vae"
-  checkpoint: "models/vae-within-cohort-healthy-lymphoid_72x192.pt"
+  name: "ijepa"
+  checkpoint: "models/ijepa-within-cohort-healthy-and-cancer-allDHS_72x192.pt"
   use_rebinned: true
-  params: {"latent_dim": 8, "base_channels": 16}
+  # optimization
+  params: {"patch_size": [6, 12], "img_size": [72, 192], "embed_dim": 256, "depth": 4, "num_heads": 4, "pred_dim": 128, "pred_depth": 1, "num_target_blocks": 8, "momentum": 0.99, "momentum_end": 1.0, "drop_rate": 0.2, "row_center_bias": 2.0}
 
 
-# Preprocessing transforms (applied in order)
-# options: "sum_normalization", "log_transform", "standardization", "slice"
+# Preprocessing
 preprocessing:
-  # coverage handling: downsample | normalize | none
-  #   downsample -> multinomial-downsample each matrix to MIN_COV_FILE (or min_cov override)
-  #   normalize -> per-sample counts per million (CPM) scaling: matrix * 1e6 / sample_total
-  #   none -> feed raw matrices through (requires use_rebinned: true)
   coverage_handling: downsample
-  min_cov: 100000  # only used when coverage_handling is set to downsample
-  max_sample_loss: 0.2  # only used when coverage_handling is set to downsample
-  # transforms: []
-  # # example 1: sum normalize
-  # transforms:
-  #   - name: "sum_normalization"
-
-  # # example 2: slice + sum normalize + log
-  # transforms:
-  #   - name: "slice"
-  #     params: {ymin: 130, ymax: 200, xmin: 600, xmax: 1400}
-  #   - name: "sum_normalization"
-  #   - name: "log_transform"
-
-  # # example 3: sum normalize + log_transform + standardization
-  # transforms:
-    # - name: "sum_normalization"
-    # - name: "log_transform"
-    # - name: "standardization"
+  min_cov: 100000
+  max_sample_loss: 0.2
 
 
 # Training hyperparameters
@@ -95,8 +80,7 @@ training:
   n_epochs: 200
   patience: 20
   optimizer: "adam"
-  beta: 0.1
-  learning_rate: 0.00495761
+  learning_rate: 0.0001
   scheduler: "reduce_on_plateau"
   scheduler_params:
     mode: "max"
@@ -104,7 +88,7 @@ training:
     factor: 0.1
 
 
-# Accessibility score parameters
+# Accessibility score parameters (only used if stages.accessibility_scores is true)
 lwps:
   window_size: 120
   lower_threshold: 120

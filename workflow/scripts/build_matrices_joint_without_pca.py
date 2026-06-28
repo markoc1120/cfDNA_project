@@ -9,6 +9,7 @@ STATS_KEYS = {
     'pfe': 'pfe_scores',
     'fdi': 'overlapping_fdi_scores',
     'vae': 'mu',
+    'ijepa': 'embedding',
 }
 
 

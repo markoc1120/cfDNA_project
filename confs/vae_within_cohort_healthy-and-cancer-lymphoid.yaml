@@ -27,13 +27,13 @@ data:
   inference_base_matrices: "vae_full_delfi1_training_raw_data/training_frags/"
 
   # healthy-lymphoid
-  training_output_dir: "ijepa_extra_72x192/healthy_lymphoid_within_cohort_frags/"
+  training_output_dir: "ijepa_extra_72x192/healthy_and_cancer_lymphoid_within_cohort_frags/"
   training_min_coverage_file: "ijepa_extra_72x192/training_frags/min_coverage.txt"
   training_bin_edges_file: "ijepa_extra_72x192/training_frags/bin_edges.npy"
 
-  inference_output_dir: "vae_within_cohort_72x192_healthy_lymphoid/inference/"
-  accessibility_scores_dir: "vae_within_cohort_72x192_healthy_lymphoid/accessibility_scores/"
-  final_matrices_dir: "vae_within_cohort_72x192_healthy_lymphoid/final_matrices_without_pca/"
+  inference_output_dir: "vae_within_cohort_72x192_healthy_cancer_lymphoid/inference/"
+  accessibility_scores_dir: "vae_within_cohort_72x192_healthy_cancer_lymphoid/accessibility_scores/"
+  final_matrices_dir: "vae_within_cohort_72x192_healthy_cancer_lymphoid/final_matrices_without_pca/"
 
 
 # Matrix
@@ -52,9 +52,9 @@ negative_dhs:
 # Model (swap by changing name + checkpoint)
 model:
   name: "vae"
-  checkpoint: "models/vae-within-cohort-healthy-lymphoid_72x192.pt"
+  checkpoint: "models/vae-within-cohort-healthy-and-cancer-lymphoid_72x192.pt"
   use_rebinned: true
-  params: {"latent_dim": 8, "base_channels": 16}
+  params: {"latent_dim": 2, "base_channels": 32}
 
 
 # Preprocessing transforms (applied in order)
@@ -95,8 +95,8 @@ training:
   n_epochs: 200
   patience: 20
   optimizer: "adam"
-  beta: 0.1
-  learning_rate: 0.00495761
+  beta: 1
+  learning_rate: 0.005
   scheduler: "reduce_on_plateau"
   scheduler_params:
     mode: "max"

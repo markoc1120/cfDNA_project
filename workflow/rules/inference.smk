@@ -64,7 +64,7 @@ if COVERAGE_HANDLING == "downsample":
         output:
             temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_downsampled.npy")
         resources:
-            runtime=5
+            runtime=1
         group: "downsample_matrices"
         script:
             "../scripts/downsample_matrices.py"
@@ -111,7 +111,7 @@ rule calculate_coverage_after_coverage_handling:
     output:
         f"{ACCESSIBILITY_DIR}{{sample}}__{{dhs_file}}.cov.txt"
     resources:
-        runtime=5
+        runtime=1
     group: "coverage_handling"
     script:
         "../scripts/calculate_coverage.py"
@@ -123,7 +123,7 @@ rule inference_rebin_matrices:
     output:
         temp(f"{INFERENCE_OUTPUT_DIR}{{sample}}__{{dhs_file}}_rebinned.npy")
     resources:
-        runtime=10
+        runtime=1
     group: "rebin_matrices"
     script:
         "../scripts/rebin_matrices.py"
@@ -138,7 +138,7 @@ rule run_inference:
         checkpoint=MODEL["checkpoint"],
         model_type=MODEL["name"],
     resources:
-        runtime=10
+        runtime=1
     group: "inference"
     script:
         "../scripts/run_inference.py"
